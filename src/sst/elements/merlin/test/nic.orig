@@ -26,8 +26,8 @@
 
 #include <sst/core/interfaces/simpleNetwork.h>
 
-#define TRACK 1 //net_id of src for packet to track
-#define TARG 8 //net_id of dest for packet to track
+#define TRACK 1000
+//bool set = false; //because I only want to track one packet, not all
 
 namespace SST {
 using namespace SST::Interfaces;
@@ -53,7 +53,7 @@ nic::nic(ComponentId_t cid, Params& params) :
     if ( net_id == -1 ) {
     }
     // std::cout << "id: " << id << "\n";
-   //  std::cout << "Nic ID:  " << id << " has Component id " << cid << "\n";
+    // std::cout << "Nic ID:  " << id << " has Component id " << cid << "\n";
 
     num_peers = params.find<int>("num_peers",-1);
     if ( num_peers == -1 ) {
@@ -150,7 +150,6 @@ void nic::complete(unsigned int phase) {
     }
 
     init_complete(phase);
-	//std::cout << "down links: " << downLinkCount << "\n";
 }
 
 /*
@@ -200,7 +199,7 @@ nic::init_complete(unsigned int phase) {
         // SimpleNetwork::Request* req = link_control->recvInitData();
         SimpleNetwork::Request* req;
         while ( (req = link_control->recvInitData() ) != NULL ) {
-            if(req->getTrack() == true) std::cout << "NIC " << id << " Received an init event from " << req->src << " in phase " << phase << "!" << std::endl;
+            // std::cout << "NIC " << id << " Received an init event from " << req->src << " in phase " << phase << "!" << std::endl;
             delete req;
             init_broadcast_count++;
         }
@@ -219,7 +218,7 @@ nic::init_complete(unsigned int phase) {
     {   
         SimpleNetwork::Request* req;
         while ( (req = link_control->recvInitData() ) != NULL ) {
-            if(req->getTrack() == true) std::cout << "NIC " << id << " Received an init event from " << req->src << " in phase " << phase << "!" << std::endl;
+            // std::cout << "NIC " << id << " Received an init event from " << req->src << " in phase " << phase << "!" << std::endl;
 
             // It's possible some of the point to point will overlap
             // some of the broadcasts, so we need to check to see
@@ -449,8 +448,14 @@ nic::clock_handler(Cycle_t cycle)
             req->size_in_bits = msg_size;
             req->givePayload(ev);
 
-			if(net_id == TRACK && (last_target == TARG)){
+			if(net_id == TRACK ){// && (last_target == (num_peers/2))){
+				//if(set == false){
             		req->setTrack(true);
+					//set = true;
+					std::cout << "++++++++++++++++++++++++ \nTRACK: " << TRACK << " ";
+            		std::cout << "id " << id << " net_id " << net_id << " dest: "<< req->dest << "\n";
+					std::cout << "++++++++++++++++++++++++\n";
+        		//}
 			}
         	else
            		req->setTrack(false);
@@ -483,9 +488,12 @@ nic::clock_handler(Cycle_t cycle)
             packets_recd++;
             // int src = net_map[req->src];
             int src = req->src;
+
             if ( req->dest != net_id ) {
                 output.fatal(CALL_INFO,-1,"%d received packet intended for %d\n",net_id,(int)req->dest);
             }
+
+            
 #if 0
             if ( next_seq[src] != ev->seq ) {
                 output.output("%d received packet %d from %d Expected sequence number %d\n",

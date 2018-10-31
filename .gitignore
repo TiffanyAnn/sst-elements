@@ -16,3 +16,9 @@ config.status
 configure
 libtool
 tags
+src/sst/elements/merlin/tests/*.out
+src/sst/elements/merlin/tests/output/*
+src/sst/elements/merlin/*DF*.txt
+src/sst/elements/merlin/*.out
+
+

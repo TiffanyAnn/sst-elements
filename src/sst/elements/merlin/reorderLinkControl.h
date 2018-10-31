@@ -58,6 +58,8 @@ public:
         Request(req->dest, req->src, req->size_in_bits, req->head, req->tail),
         seq(seq)
         {
+//			dl = getDownLinkCounter();
+			track = req->getTrack();
             givePayload(req->takePayload());
             trace = req->getTraceType();
             traceID = req->getTraceID();

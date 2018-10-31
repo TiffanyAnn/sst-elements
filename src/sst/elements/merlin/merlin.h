@@ -24,8 +24,13 @@
 #include <sst/core/simulation.h>
 #include <sst/core/timeConverter.h>
 #include <sst/core/output.h>
+#include <unordered_map>
+#include <unordered_set>
 
-
+extern int downLinkCount; //how many times a downlink was encountered
+extern std::unordered_multimap<unsigned int,unsigned int>umap; //the routing table
+extern std::unordered_set<unsigned int>downRoutes; //routes unavailable due to link failures
+extern std::unordered_set<unsigned int>DL;
 using namespace SST;
 
 namespace SST {

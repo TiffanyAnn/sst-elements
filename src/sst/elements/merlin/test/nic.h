@@ -26,6 +26,8 @@
 #include <sst/core/timeConverter.h>
 #include <sst/core/interfaces/simpleNetwork.h>
 
+#include "sst/elements/merlin/merlin.h"
+#include "sst/elements/merlin/router.h"
 
 namespace SST {
 
@@ -69,7 +71,7 @@ private:
     int id;
     int num_vns;
     int last_vn;
-
+	int downLinkCounter;
     // passed in parameters
     int net_id;
     int num_peers;
@@ -96,7 +98,7 @@ private:
     int remap;
 
     Output& output;
-    
+	    
 public:
     nic(ComponentId_t cid, Params& params);
     ~nic();
@@ -105,7 +107,8 @@ public:
     void complete(unsigned int phase);
     void setup(); 
     void finish();
-
+	void updateDownLinks(int value);
+	void updateValiantRoutes(int value);
 
 private:
     bool clock_handler(Cycle_t cycle);

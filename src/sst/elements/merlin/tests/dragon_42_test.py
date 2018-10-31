@@ -20,14 +20,14 @@ if __name__ == "__main__":
     endPoint = TestEndPoint()
     #endPoint = ShiftEndPoint()
     print "\n-------------------------------------------------"
-    print "Dragonfly 72(2:4:1:9) TestEndPoint"
-    print "adaptive-local, threshold 2.0, num_msgs=1"
+    print "Dragonfly 42(2:3:1:7) TestEndPoint"
+    print "minimal, num_msgs=1"
     print "-------------------------------------------------\n"
 
     sst.merlin._params["dragonfly:hosts_per_router"] = "2"
-    sst.merlin._params["dragonfly:routers_per_group"] = "4"
+    sst.merlin._params["dragonfly:routers_per_group"] = "3"
     sst.merlin._params["dragonfly:intergroup_links"] = "1"
-    sst.merlin._params["dragonfly:num_groups"] = "9"
+    sst.merlin._params["dragonfly:num_groups"] = "7"
 #    sst.merlin._params["dragonfly:algorithm"] = "minimal"
     sst.merlin._params["dragonfly:algorithm"] = "adaptive-local"
     sst.merlin._params["dragonfly:adaptive_threshold"] = "2.0"

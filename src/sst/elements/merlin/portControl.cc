@@ -45,15 +45,14 @@ PortControl::sendTopologyEvent(TopologyEvent* ev)
 void
 PortControl::send(internal_router_event* ev, int vc)
 {
+
 #if TRACK
     if ( rtr_id == TRACK_ID && port_number == TRACK_PORT ) {
         // std::cout << "send start:" << std::endl;
-        printStatus(Simulation::getSimulation()->getSimulationOutput(),0,0);
+      //  printStatus(Simulation::getSimulation()->getSimulationOutput(),0,0);
     }
 #endif
-	// std::cout << "sending event on port " << port_number << " and VC " << vc << std::endl;
-	// if ( xbar_in_credits[vc] < ev->getFlitCount() ) return false;
-    
+
 	xbar_in_credits[vc] -= ev->getFlitCount();
     if ( oql_track_port ) {
         int flits = ev->getFlitCount();
@@ -68,18 +67,14 @@ PortControl::send(internal_router_event* ev, int vc)
 
 	output_buf[vc].push(ev);
 	if ( waiting ) {
-	// if ( waiting && !have_packets ) {
-	    // std::cout << "waking up the output" << std::endl;
 	    output_timing->send(1,NULL); 
 	    waiting = false;
 	}
 #if TRACK
     if ( rtr_id == TRACK_ID && port_number == TRACK_PORT ) {
-        // std::cout << "send end:" << std::endl;
         printStatus(Simulation::getSimulation()->getSimulationOutput(),0,0);
     }
 #endif
-	// return true;
 }
 
 bool
@@ -98,7 +93,6 @@ PortControl::recv(int vc)
         printStatus(Simulation::getSimulation()->getSimulationOutput(),0,0);
     }
 #endif
-	// if ( input_buf[vc].size() == 0 ) return NULL;
 	if ( input_buf[vc].empty() ) return NULL;
 
 	internal_router_event* event = input_buf[vc].front();
@@ -125,17 +119,12 @@ PortControl::recv(int vc)
     
 #if TRACK
     if ( rtr_id == TRACK_ID && port_number == TRACK_PORT ) {
-        // std::cout << "recv start:" << std::endl;
         printStatus(Simulation::getSimulation()->getSimulationOutput(),0,0);
     }
 #endif
     return event;
 }
 // time_base is a frequency which represents the bandwidth of the link in flits/second.
-// PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
-//                          int port_number, TimeConverter* time_base, Topology *topo, 
-//                          SimTime_t input_latency_cycles, std::string input_latency_timebase,
-//                          SimTime_t output_latency_cycles, std::string output_latency_timebase) :
 PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
                          int port_number, const UnitAlgebra& link_bw, const UnitAlgebra& flit_size,
                          Topology *topo, 
@@ -198,7 +187,9 @@ PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
         port_link = NULL;
         break;
     }
-    
+
+	//std::cout << rtr_id << "/" << port_number << " " << link_bw << "\n";
+//   	std::cout << "rtr_id: " << rtr_id << " port: " << port_number << " " << topo->getPortLogicalGroup(port_number) << "\n"; 
 	// This is the self link to enable the logic for adaptive link widths.
 	// The initial call to the handler dynlink_timing->send is made in setup.
 	dynlink_timing = rif->configureSelfLink(link_port_name + "_dynlink_timing", "10us",
@@ -212,10 +203,11 @@ PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
         connected = false;
         return;
     }
-
-    input_buf_size = in_buf_size;
-    output_buf_size = out_buf_size;
-
+	
+	else {
+    	input_buf_size = in_buf_size;
+    	output_buf_size = out_buf_size;
+	}
     if ( port_link && input_latency_timebase != "" ) {
         // std::cout << "Adding extra latency" << std::endl;
         port_link->addRecvLatency(input_latency_cycles,input_latency_timebase);
@@ -377,7 +369,6 @@ PortControl::setup() {
 void
 PortControl::finish() {
 
-	//std::cerr << "Link was adjusted " << width_adj_count->getCollectionCount() << " times.\n";
     // Any links that ended in an idle state need to add stats
     if (is_idle && connected) {
         idle_time->addData(Simulation::getSimulation()->getCurrentSimCycle() - idle_start);
@@ -412,39 +403,26 @@ PortControl::init(unsigned int phase) {
     Event *ev;
     RtrInitEvent* init_ev;
 
-	//if (link_bw.hasUnits("GB"))
-	//	printf("Has units GBytes\n");
-	//if (link_bw.hasUnits("B"))
-	//	printf("Has units Bytes\n");
-	//if (link_bw.hasUnits("B/s"))
-	//	printf("Has units Bytes per second\n");
-	//if (link_bw.hasUnits("b"))
-	//	printf("Has units Bits\n");
-	//if (link_bw.hasUnits("b/s"))
-	//	printf("Has units Bits per second\n");
-	//else
-	//	printf("Bandwidth is: %s\n", link_bw.toString().c_str());
     switch ( phase ) {
     case 0:
+//	if((port_number == 3 && rtr_id == 6))
+//		link_bw = link_bw*0;
         // Negotiate link speed.  We will take the min of the two link speeds
         init_ev = new RtrInitEvent();
         init_ev->command = RtrInitEvent::REPORT_BW;
         init_ev->ua_value = link_bw;
         port_link->sendInitData(init_ev);
         
-        // std::cout << "FLIT - isHostPort(" << port_number << "): " << topo->isHostPort(port_number) << std::endl;
         // If this is a host port, send the endpoint ID to the LinkControl
         if ( topo->isHostPort(port_number) ) {
             init_ev = new RtrInitEvent();
             init_ev->command = RtrInitEvent::REPORT_FLIT_SIZE;
             init_ev->ua_value = flit_size;
             port_link->sendInitData(init_ev);
-            // std::cout << "FLIT_SIZE: " << flit_size.toStringBestSI() << std::endl;
         
             RtrInitEvent* ev = new RtrInitEvent();
             ev->command = RtrInitEvent::REPORT_ID;
             ev->int_value = topo->getEndpointID(port_number);
-            // ev->print("PC: ", Simulation::getSimulation()->getSimulationOutput());
             port_link->sendInitData(ev);
         }
         else {
@@ -471,7 +449,6 @@ PortControl::init(unsigned int phase) {
         // Initialize links (or rather, reset the TimeBase to get the
         // right BW).
         UnitAlgebra link_clock = link_bw / flit_size;
-        // std::cout << link_clock.toStringBestSI() << std::endl;
         TimeConverter* tc = parent->getTimeConverter(link_clock);
         output_timing->setDefaultTimeBase(tc);
         delete ev;
@@ -519,7 +496,6 @@ PortControl::init(unsigned int phase) {
         // If my VCs have been initialized and the remote side is
         // ready to receive credits, send the credit events.
         if ( num_vcs != -1 && remote_rdy_for_credits ) {
-            // std::cout << "Sending credit events (port = " << port_number << "), num_vcs = " << num_vcs << std::endl;
             for ( int i = 0; i < num_vcs; i++ ) {
                 port_link->sendInitData(new credit_event(i,port_ret_credits[i]));
                 port_ret_credits[i] = 0;
@@ -534,14 +510,12 @@ PortControl::init(unsigned int phase) {
                 if ( ce->vc >= num_vcs ) {
                     // _abort(PortControl, "Received Credit Event for VC %d.  I only know of VCS[0-%d]\n", ce->vc, num_vcs-1);
                 }
-                // std::cout << "Received credit_event (port = " << port_number << ")" << std::endl;
                 port_out_credits[ce->vc] += ce->credits;
                 delete ev;
             }
             else {
                 RtrInitEvent* init_ev = dynamic_cast<RtrInitEvent*>(ev);
                 if ( init_ev != NULL ) {
-                    // std::cout << "Received RtrInitEvent (port = " << port_number << ")" << std::endl;
                     remote_rdy_for_credits = true;
                     if ( num_vcs == -1 ) {
                         // I have not yet been intiialized, so report VCs to router
@@ -555,8 +529,7 @@ PortControl::init(unsigned int phase) {
             }
         }
         break;
-    }   
-    // std::cout << "End PortControl::init" << std::endl;
+    }  
 }
 
 void
@@ -711,7 +684,6 @@ PortControl::handle_input_n2r(Event* ev)
 	    // If we're waiting, we need to send a wakeup event to the
 	    // output queues
 	    if ( waiting ) {
-            // std::cout << output_timing << std::endl;
             output_timing->send(1,NULL); 
             waiting = false;
             // If we were stalled waiting for credits and we had
@@ -742,7 +714,7 @@ PortControl::handle_input_n2r(Event* ev)
             parent->inc_vcs_with_data();
 	    }
 	    
-	    if ( event->request->getTraceType() != SST::Interfaces::SimpleNetwork::Request::NONE ) {
+	    /*if(event->getTrack() == true) {//if ( event->request->getTraceType() != SST::Interfaces::SimpleNetwork::Request::NONE ) {
             output.output("TRACE(%d): %" PRIu64 " ns: Received an event on port %d in router %d"
                           " (%s) on VC %d from src %" PRIu64 " to dest %" PRIu64 ".\n",
                           event->getTraceID(),
@@ -753,13 +725,7 @@ PortControl::handle_input_n2r(Event* ev)
                           curr_vc,
                           event->request->src,
                           event->request->dest);
-                          
-            // std::cout << "TRACE(" << event->getTraceID() << "): " << parent->getCurrentSimTimeNano()
-            //           << " ns: Received an event on port " << port_number
-            //           << " in router " << rtr_id << " ("
-            //           << parent->getName() << ") on VC " << curr_vc << " from src " << event->request->src
-            //           << " to dest " << event->request->dest << "." << std::endl;
-	    }
+	    }*/
         
 	    if ( parent->getRequestNotifyOnEvent() ) parent->notifyEvent();
 	}
@@ -780,7 +746,6 @@ PortControl::handle_input_r2r(Event* ev)
 {
 #if TRACK
     if ( rtr_id == TRACK_ID && port_number == TRACK_PORT ) {
-        // std::cout << "handle_input_r2r start:" << std::endl;
         ev->print("  ", Simulation::getSimulation()->getSimulationOutput());
         printStatus(Simulation::getSimulation()->getSimulationOutput(),0,0);
     }
@@ -835,9 +800,8 @@ PortControl::handle_input_r2r(Event* ev)
             vc_heads[curr_vc] = event;
             parent->inc_vcs_with_data();
 	    }
-        // std::cout << "Got to here 3" << std::endl; 
 	    
-	    if ( event->getTraceType() != SimpleNetwork::Request::NONE ) {
+/*if(event->getTrack() == true){//	    if ( event->getTraceType() != SimpleNetwork::Request::NONE ) {
             output.output("TRACE(%d): %" PRIu64 " ns: Received an event on port %d in router %d"
                           " (%s) on VC %d from src %d to dest %d.\n",
                           event->getTraceID(),
@@ -849,13 +813,7 @@ PortControl::handle_input_r2r(Event* ev)
                           event->getSrc(),
                           event->getDest());
 
-                          
-            // std::cout << "TRACE(" << event->getTraceID() << "): " << parent->getCurrentSimTimeNano()
-            //           << " ns: Received an event on port " << port_number
-            //           << " in router " << rtr_id << " ("
-            //           << parent->getName() << ") on VC " << curr_vc << " from src " << event->getSrc()
-            //           << " to dest " << event->getDest() << "." << std::endl;
-	    }
+	    }*/
         
 	    if ( parent->getRequestNotifyOnEvent() ) parent->notifyEvent();
 	}
@@ -895,10 +853,8 @@ PortControl::handle_output_r2r(Event* ev) {
         
 	    // Send event
 	    port_link->send(1,event);
-        // trace.getOutput().output(CALL_INFO, "after\n");
 	    return;
 	}
-    // trace.getOutput().output(CALL_INFO, "Got to here 1\n");
     
 	// We do a round robin scheduling.  If the current vc has no
 	// data, find one that does.
@@ -906,7 +862,6 @@ PortControl::handle_output_r2r(Event* ev) {
 	bool found = false;
 	internal_router_event* send_event = NULL;
     have_packets = false;
-    // trace.getOutput().output(CALL_INFO, "Got to here 2\n");
     
 	if (!sai_port_disabled){
 		for ( int i = curr_out_vc; i < num_vcs; i++ ) {
@@ -920,7 +875,6 @@ PortControl::handle_output_r2r(Event* ev) {
 			found = true;
 			break;
 		}
-		// trace.getOutput().output(CALL_INFO, "Got to here 3\n");
 			
 		if (!found)  {
 			for ( int i = 0; i < curr_out_vc; i++ ) {
@@ -936,11 +890,9 @@ PortControl::handle_output_r2r(Event* ev) {
 			}
 		}
 	}
-    // trace.getOutput().output(CALL_INFO, "Got to here 4\n");
 	
 	// If we found an event to send, go ahead and send it
 	if ( found ) {
-	    // std::cout << "Found an event to send on output port " << port_number << std::endl;
 	    // Send the output to the network.
 	    // First set the virtual channel.
 
@@ -977,10 +929,9 @@ PortControl::handle_output_r2r(Event* ev) {
             is_idle = false;
         }
         
-	    if ( send_event->getTraceType() == SimpleNetwork::Request::FULL ) {
-            output.output("TRACE(%d): %" PRIu64 " ns: Sent and event to router from PortControl in router: %d"
+	  /* if(send_event->getTrack() == true){// if ( send_event->getTraceType() == SimpleNetwork::Request::FULL ) {
+            output.output("TRACE(00): %" PRIu64 " ns: Sent and event to router from PortControl in router: %d"
                           " (%s) on VC %d from src %d to dest %d.\n",
-                          send_event->getTraceID(),
                           parent->getCurrentSimTimeNano(),
                           rtr_id,
                           parent->getName().c_str(),
@@ -988,13 +939,7 @@ PortControl::handle_output_r2r(Event* ev) {
                           send_event->getSrc(),
                           send_event->getDest());
 
-            // std::cout << "TRACE(" << send_event->getTraceID() << "): " << parent->getCurrentSimTimeNano()
-            //           << " ns: Sent an event to router from PortControl in router: " << rtr_id
-            //           << " (" << parent->getName() << ") on VC " << send_event->getVC()
-            //           << " from src " << send_event->getSrc()
-            //           << " to dest " << send_event->getDest()
-            //           << "." << std::endl;
-	    }
+	    }*/
         send_bit_count->addData(send_event->getEncapsulatedEvent()->request->size_in_bits);
         send_packet_count->addData(1);
 
@@ -1004,17 +949,12 @@ PortControl::handle_output_r2r(Event* ev) {
         }
 
 	    if ( host_port ) {
-            // std::cout << "Found an event to send on host port " << port_number << std::endl;
-            // trace.getOutput().output(CALL_INFO, "before\n");
             port_link->send(1,send_event->getEncapsulatedEvent()); 
-            // trace.getOutput().output(CALL_INFO, "after\n");
             send_event->setEncapsulatedEvent(NULL);
             delete send_event;
 	    }
 	    else {
-            // trace.getOutput().output(CALL_INFO, "before\n");
             port_link->send(1,send_event); 
-            // trace.getOutput().output(CALL_INFO, "after\n");
 	    }
 	}
 	else {
@@ -1107,7 +1047,6 @@ PortControl::handle_output_n2r(Event* ev) {
 	
 	// If we found an event to send, go ahead and send it
 	if ( found ) {
-	    // std::cout << "Found an event to send on output port " << port_number << std::endl;
 	    // Send the output to the network.
 	    // First set the virtual channel.
 
@@ -1145,8 +1084,8 @@ PortControl::handle_output_n2r(Event* ev) {
             is_idle = false;
         }
         
-	    if ( send_event->getTraceType() == SimpleNetwork::Request::FULL ) {
-            output.output("TRACE(%d): %" PRIu64 " ns: Sent and event to router from PortControl in router: %d"
+	    /*if(send_event->getTrack() == true) {//if ( send_event->getTraceType() == SimpleNetwork::Request::FULL ) {
+            output.output("TRACE(%d01): %" PRIu64 " ns: Sent an event to router from PortControl in router: %d"
                           " (%s) on VC %d from src %d to dest %d.\n",
                           send_event->getTraceID(),
                           parent->getCurrentSimTimeNano(),
@@ -1156,17 +1095,10 @@ PortControl::handle_output_n2r(Event* ev) {
                           send_event->getSrc(),
                           send_event->getDest());
 
-            // std::cout << "TRACE(" << send_event->getTraceID() << "): " << parent->getCurrentSimTimeNano()
-            //           << " ns: Sent an event to router from PortControl in router: " << rtr_id
-            //           << " (" << parent->getName() << ") on VC " << send_event->getVC()
-            //           << " from src " << send_event->getSrc()
-            //           << " to dest " << send_event->getDest()
-            //           << "." << std::endl;
-	    }
+	    }*/
         send_bit_count->addData(send_event->getEncapsulatedEvent()->request->size_in_bits);
         send_packet_count->addData(1);
 	    if ( host_port ) {
-            // std::cout << "Found an event to send on host port " << port_number << std::endl;
             port_link->send(1,send_event->getEncapsulatedEvent()); 
             send_event->setEncapsulatedEvent(NULL);
             delete send_event;

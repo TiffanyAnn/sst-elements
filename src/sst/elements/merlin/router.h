@@ -142,6 +142,7 @@ public:
     inline SimTime_t getInjectionTime(void) const { return injectionTime; }
     inline SST::Interfaces::SimpleNetwork::Request::TraceType getTraceType() const {return request->getTraceType();}
     inline int getTraceID() const {return request->getTraceID();}
+	inline bool getTrack() const {return request->getTrack();}
     
     inline void setSizeInFlits(int size ) {size_in_flits = size; }
     inline int getSizeInFlits() { return size_in_flits; }
@@ -274,6 +275,7 @@ class internal_router_event : public BaseRtrEvent {
     int vc;
     int credit_return_vc;
     RtrEvent* encap_ev;
+	
 
 public:
     internal_router_event() :
@@ -316,6 +318,8 @@ public:
 
     inline int getDest() const {return encap_ev->request->dest;}
     inline int getSrc() const {return encap_ev->request->src;}
+	
+	inline bool getTrack() const {return encap_ev->getTrack();}
 
     inline SST::Interfaces::SimpleNetwork::Request::TraceType getTraceType() {return encap_ev->getTraceType();}
     inline int getTraceID() {return encap_ev->getTraceID();}

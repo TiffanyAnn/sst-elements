@@ -136,8 +136,8 @@ public:
         uint32_t router;
         uint32_t host;
     };
-
-    topo_dragonfly2(Component* comp, Params& p);
+    
+	topo_dragonfly2(Component* comp, Params& p);
     ~topo_dragonfly2();
 
     virtual void route(int port, int vc, internal_router_event* ev);
@@ -146,7 +146,7 @@ public:
 
     virtual PortState getPortState(int port) const;
     virtual std::string getPortLogicalGroup(int port) const;
-
+	
     virtual void routeInitData(int port, internal_router_event* ev, std::vector<int> &outPorts);
     virtual internal_router_event* process_InitData_input(RtrEvent* ev);
 
@@ -160,7 +160,6 @@ private:
     uint32_t router_to_group(uint32_t group);
     uint32_t port_for_router(uint32_t router);
     uint32_t port_for_group(uint32_t group, uint32_t global_slice, int id = -1);
-
 };
 
 

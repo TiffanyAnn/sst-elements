@@ -18,16 +18,12 @@ if __name__ == "__main__":
 
     topo = topoDragonFly2()
     endPoint = TestEndPoint()
-    #endPoint = ShiftEndPoint()
-    print "\n-------------------------------------------------"
-    print "Dragonfly 72(2:4:1:9) TestEndPoint"
-    print "adaptive-local, threshold 2.0, num_msgs=1"
-    print "-------------------------------------------------\n"
+#    endPoint = ShiftEndPoint()
 
-    sst.merlin._params["dragonfly:hosts_per_router"] = "2"
+    sst.merlin._params["dragonfly:hosts_per_router"] = "1"
     sst.merlin._params["dragonfly:routers_per_group"] = "4"
     sst.merlin._params["dragonfly:intergroup_links"] = "1"
-    sst.merlin._params["dragonfly:num_groups"] = "9"
+    sst.merlin._params["dragonfly:num_groups"] = "4"
 #    sst.merlin._params["dragonfly:algorithm"] = "minimal"
     sst.merlin._params["dragonfly:algorithm"] = "adaptive-local"
     sst.merlin._params["dragonfly:adaptive_threshold"] = "2.0"
@@ -48,11 +44,10 @@ if __name__ == "__main__":
     sst.merlin._params["output_latency"] = "20ns"
     sst.merlin._params["input_buf_size"] = "4kB"
     sst.merlin._params["output_buf_size"] = "4kB"
-
+    
     sst.merlin._params["packets_to_send"] = "1"
     sst.merlin._params["num_messages"] = "1"
-    sst.merlin._params["shift"] = "1"    
-    #sst.merlin._params["checkerboard"] = "1"
+    sst.merlin._params["shift"] = "1"
     sst.merlin._params["xbar_arb"] = "merlin.xbar_arb_lru"
 
     topo.prepParams()

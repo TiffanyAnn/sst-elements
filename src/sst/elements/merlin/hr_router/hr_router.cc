@@ -236,11 +236,24 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
         // For each port, some default parameters can be overwritten
         // by logical group parameters (link_bw, input_buf_size,
         // output_buf_size, input_latency, output_latency).
-
         // ports[i] = new PortControl(this, id, port_name.str(), i, link_bw, flit_size, topo,
         //                            1, input_latency, 1, output_latency,
         //                            input_buf_size, output_buf_size, inspector_names);
-        ports[i] = new PortControl(this, id, port_name.str(), i,
+
+		if((id == 1006 && i == 3) || (id == 1006 && i == 2)){
+			ports[i] = new PortControl(this, id, port_name.str(), i,
+                                   (link_bw*0),
+                                   flit_size, topo,
+                                   1, getLogicalGroupParam(params,topo,i,"input_latency","0ns"),
+                                   1, getLogicalGroupParam(params,topo,i,"output_latency","0ns"),
+                                   getLogicalGroupParam(params,topo,i,"input_buf_size"),
+                                   getLogicalGroupParam(params,topo,i,"output_buf_size"),
+                                   inspector_names,
+                                   std::stof(getLogicalGroupParam(params,topo,i,"dlink_thresh", "-1")),
+                                   oql_track_port,oql_track_remote);
+		}
+		else{
+        	ports[i] = new PortControl(this, id, port_name.str(), i,
                                    getLogicalGroupParamUA(params,topo,i,"link_bw"),
                                    flit_size, topo,
                                    1, getLogicalGroupParam(params,topo,i,"input_latency","0ns"),
@@ -251,7 +264,8 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
 								   std::stof(getLogicalGroupParam(params,topo,i,"dlink_thresh", "-1")),
                                    oql_track_port,oql_track_remote);
         
-    }
+    	}
+	}
     params.enableVerify(true);
     
     // Get the Xbar arbitration
@@ -419,10 +433,10 @@ hr_router::clock_handler(Cycle_t cycle)
         if ( progress_vcs[i] > -1 ) {
             internal_router_event* ev = ports[i]->recv(progress_vcs[i]);
             ports[ev->getNextPort()]->send(ev,ev->getVC());
-            // std::cout << "" << id << ": " << "Moving VC " << progress_vcs[i] <<
-            // 	" for port " << i << " to port " << ev->getNextPort() << std::endl;
+            //if(ev->getTrack() == true){ std::cout << "" << id << ": " << "Moving VC " << progress_vcs[i] <<
+             //	" for port " << i << " to port " << ev->getNextPort() << std::endl;}
             
-            if ( ev->getTraceType() == SimpleNetwork::Request::FULL ) {
+           /* if(ev->getTrack() == true){//if ( ev->getTraceType() == SimpleNetwork::Request::FULL ) {
                 output.output("TRACE(%d): %" PRIu64 " ns: Copying event (src = %d, dest = %d) "
                               "over crossbar in router %d (%s) from port %d, VC %d to port"
                               " %d, VC %d.\n",
@@ -435,7 +449,7 @@ hr_router::clock_handler(Cycle_t cycle)
                               i,
                               progress_vcs[i] ,
                               ev->getNextPort(),
-                              ev->getVC());
+                              ev->getVC()) */;
                               
 
                // std::cout << "TRACE(" << ev->getTraceID() << "): " << getCurrentSimTimeNano()
@@ -445,7 +459,7 @@ hr_router::clock_handler(Cycle_t cycle)
                //            << " from port " << i << ", VC " << progress_vcs[i] 
                //            << " to port " << ev->getNextPort() << ", VC " << ev->getVC()
                //            << "." << std::endl;
-            }
+            //}
 
         }
         else if ( progress_vcs[i] == -2 ) {
@@ -480,7 +494,6 @@ void
 hr_router::init(unsigned int phase)
 {
     for ( int i = 0; i < num_ports; i++ ) {
-        // std::cout << "Calling init on port: " << i << ", in phase " << phase << std::endl;
         ports[i]->init(phase);
         Event *ev = NULL;
         while ( (ev = ports[i]->recvInitData()) != NULL ) {
@@ -534,7 +547,6 @@ void
 hr_router::complete(unsigned int phase)
 {
     for ( int i = 0; i < num_ports; i++ ) {
-        // std::cout << "Calling init on port: " << i << ", in phase " << phase << std::endl;
         ports[i]->complete(phase);
         Event *ev = NULL;
         while ( (ev = ports[i]->recvInitData()) != NULL ) {

@@ -25,7 +25,7 @@
 
 #include <sst/core/interfaces/simpleNetwork.h>
 
-#define TRACK 0
+#define TRACK TRACK_PACK
 
 namespace SST {
 using namespace SST::Interfaces;
