@@ -240,7 +240,7 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
         //                            1, input_latency, 1, output_latency,
         //                            input_buf_size, output_buf_size, inspector_names);
 
-		if((id == 1006 && i == 3) || (id == 1006 && i == 2)){
+/*		if((id == 1006 && i == 3) || (id == 1006 && i == 2)){
 			ports[i] = new PortControl(this, id, port_name.str(), i,
                                    (link_bw*0),
                                    flit_size, topo,
@@ -252,7 +252,7 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
                                    std::stof(getLogicalGroupParam(params,topo,i,"dlink_thresh", "-1")),
                                    oql_track_port,oql_track_remote);
 		}
-		else{
+		else{*/
         	ports[i] = new PortControl(this, id, port_name.str(), i,
                                    getLogicalGroupParamUA(params,topo,i,"link_bw"),
                                    flit_size, topo,
@@ -264,7 +264,7 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
 								   std::stof(getLogicalGroupParam(params,topo,i,"dlink_thresh", "-1")),
                                    oql_track_port,oql_track_remote);
         
-    	}
+    //	}
 	}
     params.enableVerify(true);
     
@@ -414,7 +414,8 @@ hr_router::clock_handler(Cycle_t cycle)
     for ( int i = 0; i < num_ports; i++ ) {
         for ( int j = 0; j < num_vcs; j++ ) {
             if ( vc_heads[index] != NULL ) {
-                topo->reroute(i,j,vc_heads[index]);
+				//if(vc_heads[index]->getTrack() == true){ }
+                	topo->reroute(i,j,vc_heads[index]);
             }
             index++;
         }

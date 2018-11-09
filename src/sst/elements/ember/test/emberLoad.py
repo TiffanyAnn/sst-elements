@@ -238,11 +238,16 @@ elif "fattree" == netTopo:
 	topoInfo = FattreeInfo(netShape)
 	topo = topoFatTree()
 
-elif "dragonfly" == netTopo or "dragonfly2" == netTopo:
+elif "dragonfly" == netTopo:
 		
 	topoInfo = DragonFlyInfo(netShape)
 	topo = topoDragonFly()
 
+elif "dragonfly2" == netTopo:
+	
+	topoInfo = DragonFlyInfo(netShape)
+	topo = topoDragonFly()
+	
 elif "dragonflyLegacy" == netTopo:
 
 	topoInfo = DragonFlyLegacyInfo(netShape)

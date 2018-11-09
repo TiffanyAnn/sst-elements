@@ -16,17 +16,22 @@ from sst.merlin import *
 
 if __name__ == "__main__":
 
-    topo = topoDragonFly()
+    topo = topoDragonFly2()
     endPoint = TestEndPoint()
+    #endPoint = ShiftEndPoint()
+    print "\n-------------------------------------------------"
+    print "Dragonfly 2048(8:16:8:16) TestEndPoint"
+    print "adaptive-local, threshold 2.0, num_msgs=1"
+    print "-------------------------------------------------\n"
 
+    sst.merlin._params["dragonfly:hosts_per_router"] = "8"
+    sst.merlin._params["dragonfly:routers_per_group"] = "16"
+    sst.merlin._params["dragonfly:intergroup_links"] = "16"
+    sst.merlin._params["dragonfly:num_groups"] = "24"
 
-    sst.merlin._params["dragonfly:hosts_per_router"] = "4"
-    sst.merlin._params["dragonfly:routers_per_group"] = "8"
-    sst.merlin._params["dragonfly:intergroup_links"] = "1"
-    sst.merlin._params["dragonfly:num_groups"] = "4"
 #    sst.merlin._params["dragonfly:algorithm"] = "minimal"
     sst.merlin._params["dragonfly:algorithm"] = "adaptive-local"
-    #sst.merlin._params["dragonfly:adaptive_threshold"] = "2.0"
+    sst.merlin._params["dragonfly:adaptive_threshold"] = "2.0"
 
     #glm = [0, 15, 1, 14, 2, 13, 3, 12, 4, 11, 5, 10, 6, 9, 7, 8]
     #topo.setGlobalLinkMap(glm)
@@ -44,7 +49,10 @@ if __name__ == "__main__":
     sst.merlin._params["output_latency"] = "20ns"
     sst.merlin._params["input_buf_size"] = "4kB"
     sst.merlin._params["output_buf_size"] = "4kB"
-    
+
+    sst.merlin._params["packets_to_send"] = "1"
+    sst.merlin._params["num_messages"] = "1"
+    sst.merlin._params["shift"] = "1"    
     #sst.merlin._params["checkerboard"] = "1"
     sst.merlin._params["xbar_arb"] = "merlin.xbar_arb_lru"
 

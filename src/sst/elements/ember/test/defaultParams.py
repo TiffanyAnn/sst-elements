@@ -17,7 +17,7 @@ networkParams = {
 
 nicParams = {
 	"detailedCompute.name" : "thornhill.SingleThread",
-    "module" : "merlin.linkcontrol",
+    "module" : "merlin.reorderlinkcontrol",
     "packetSize" : networkParams['packetSize'],
     "link_bw" : networkParams['link_bw'],
     "input_buf_size" : networkParams['input_buf_size'],

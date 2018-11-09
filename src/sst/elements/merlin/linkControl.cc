@@ -24,10 +24,11 @@
 #include <sstream>
 #include "merlin.h"
 
-#define RUNTYPE 0
+#define RUNTYPE 1 //0: create routing table
+				  //1: read routing table from file
 #define FILENAME "TEST_16DF_rt.txt" //filename for the routing table
-bool hasPrinted = false; //to print the routing table only once
-bool fileRead = false;
+static bool hasPrinted = false; //to print the routing table only once
+static bool fileRead = false;
 
 namespace SST {
 using namespace Interfaces;
@@ -39,14 +40,13 @@ void readRoutes(){
     unsigned int portInRoute;
     std::string routeID;
     std::string line;
-    //FILE * routeFile;
     bool found;
 	std::ifstream routeFile(FILENAME);
 
     while(std::getline(routeFile, line))
     {
         found = false;
-		std::istringstream temp(line);	
+		std::istringstream temp(line);
         std::getline(temp, routeID, ':');
         routeKey = std::stoul (routeID);
         while(std::getline(temp, line, ',') && found == false){
@@ -58,9 +58,11 @@ void readRoutes(){
              	found = true;
            }
        }
-    }   
+    }
 
     fileRead = true;
+std::cout << "route read from file\n";
+
 }
 
 void writeRoutes(){
@@ -80,6 +82,7 @@ void writeRoutes(){
         }
     }
     fclose (routeFile);
+std::cout << "route written to file\n";
 }
 
 LinkControl::LinkControl(Component* parent, Params &params) :
@@ -107,19 +110,19 @@ LinkControl::LinkControl(Component* parent, Params &params) :
         merlin_abort.fatal(CALL_INFO,-1,"Unknown checkerboard_alg requested: %s\n",checkerboard_alg.c_str());
     }
 }
-    
+
 bool
 LinkControl::initialize(const std::string& port_name, const UnitAlgebra& link_bw_in,
                         int vns, const UnitAlgebra& in_buf_size,
                         const UnitAlgebra& out_buf_size)
-{    
+{
     req_vns = vns;
     total_vns = vns * checker_board_factor;
     link_bw = link_bw_in;
     if ( link_bw.hasUnits("B/s") ) {
         link_bw *= UnitAlgebra("8b/B");
     }
-    
+
     // Input and output buffers
     input_buf = new network_queue_t[req_vns];
     output_buf = new network_queue_t[total_vns];
@@ -146,7 +149,7 @@ LinkControl::initialize(const std::string& port_name, const UnitAlgebra& link_bw
                            "bits or bytes: %s\n",outbuf_size.toStringBestSI().c_str());
     }
     if ( outbuf_size.hasUnits("B") ) outbuf_size *= UnitAlgebra("8b/B");
-    
+
     // The output credits are set to zero and the other side of the
     // link will send the number of tokens.
     for ( int i = 0; i < total_vns; i++ ) rtr_credits[i] = 0;
@@ -162,12 +165,12 @@ LinkControl::initialize(const std::string& port_name, const UnitAlgebra& link_bw
     send_bit_count = registerStatistic<uint64_t>("send_bit_count");
     output_port_stalls = registerStatistic<uint64_t>("output_port_stalls");
     idle_time = registerStatistic<uint64_t>("idle_time");
-   
+
 	// Read in routing information and check for downLinks
 #if RUNTYPE == 1
 	if(fileRead == false)
 		readRoutes();
-#endif 
+#endif
     return true;
 }
 
@@ -224,7 +227,7 @@ void LinkControl::init(unsigned int phase)
         UnitAlgebra flit_size_ua = init_ev->ua_value;
         flit_size = flit_size_ua.getRoundedValue();
         delete ev;
-        
+
         // Need to reset the time base of the output link
         UnitAlgebra link_clock = link_bw / flit_size_ua;
 
@@ -232,15 +235,15 @@ void LinkControl::init(unsigned int phase)
         for ( int i = 0; i < total_vns; i++ ) {
             in_ret_credits[i] = (inbuf_size / flit_size_ua).getRoundedValue();
         }
-        
+
         // Need to initialize the credit arrays
         for ( int i = 0; i < req_vns; i++ ) {
             outbuf_credits[i] = (outbuf_size / flit_size_ua).getRoundedValue();
         }
-        
+
         TimeConverter* tc = parent->getTimeConverter(link_clock);
         output_timing->setDefaultTimeBase(tc);
-        
+
         // Initialize links
         // Receive the endpoint ID from PortControl
         ev = rtr_link->recvInitData();
@@ -258,7 +261,7 @@ void LinkControl::init(unsigned int phase)
 
         id = init_ev->int_value;
         delete ev;
-        
+
         // Need to send available credits to other side of link
         for ( int i = 0; i < total_vns; i++ ) {
             rtr_link->sendUntimedData(new credit_event(i,in_ret_credits[i]));
@@ -346,19 +349,24 @@ void LinkControl::finish(void)
     }
 
 #if RUNTYPE == 0
-	//print route info
+	//print route info to file
 	if(hasPrinted == false){
-		writeRoutes();		
+		writeRoutes();
 		hasPrinted = true;
 	}
 #endif
 #if RUNTYPE == 1
 	if(hasPrinted == false){
 		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
+		std::cout << "number of packets routed minimally: " << dirPacketCount << "\n";
+		std::cout << "number of packets adaptively routed: " << valPacketCount << "\n";
+		std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
+		std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
+		std::cout << "total packets: " << allPackets << "\n";
 		hasPrinted = true;
 	}
 #endif
-}	
+}
 
 
 // Returns true if there is space in the output buffer and false
@@ -391,13 +399,13 @@ bool LinkControl::send(SimpleNetwork::Request* req, int vn) {
         // Should never happen, checked in constructor
         merlin_abort.fatal(CALL_INFO,-1,"Should never happen, checked in constructor\n");
         vn_offset = 0;
-    }    
+    }
     ev->request->vn = vn * checker_board_factor + vn_offset;
-    
-    
+
+
     // printf("%d: Send message to %llu on VN: %d, which is actually VN:%d --> %llu",id,req->dest,vn,req->vn,req->dest+req->src);
     // std::cout << std::endl;
-    
+
     output_buf[ev->request->vn].push(ev);
     if ( waiting && !have_packets ) {
         output_timing->send(1,NULL);
@@ -446,7 +454,7 @@ SST::Interfaces::SimpleNetwork::Request* LinkControl::recv(int vn) {
 
     // printf("%d: Returning credits on VN: %d for packet from %llu",id, event->request->vn, event->request->src);
     // std::cout << std::endl;
-    
+
     /*if(event->getTrack() == true){//if ( event->getTraceType() != SimpleNetwork::Request::NONE ) {
         output.output("TRACE(%d02): %" PRIu64 " ns: recv called on LinkControl in NIC: %s\n",event->getTraceID(),
                       parent->getCurrentSimTimeNano(), parent->getName().c_str());
@@ -582,7 +590,7 @@ void LinkControl::handle_output(Event* ev)
         found = true;
         break;
     }
-    
+
     if (!found)  {
         for ( int i = 0; i < curr_out_vn; i++ ) {
             if ( output_buf[i].empty() ) continue;
@@ -611,13 +619,13 @@ void LinkControl::handle_output(Event* ev)
 
         // Send an event to wake up again after this packet is sent.
         output_timing->send(size,NULL);
-        
+
         curr_out_vn = vn_to_send + 1;
         if ( curr_out_vn == total_vns ) curr_out_vn = 0;
 
         // Add in inject time so we can track latencies
         send_event->setInjectionTime(parent->getCurrentSimTimeNano());
-        
+
         // Subtract credits
         rtr_credits[vn_to_send] -= size;
 
@@ -630,7 +638,7 @@ void LinkControl::handle_output(Event* ev)
 
         rtr_link->send(send_event);
         // std::cout << "Sent packet on vn " << vn_to_send << ", credits remaining: " << rtr_credits[vn_to_send] << std::endl;
-        
+
        /* if(send_event->getTrack() == true){//if ( send_event->getTraceType() == SimpleNetwork::Request::FULL ) {
             output.output("TRACE(%d02): %" PRIu64 " ns: Sent an event to router from LinkControl"
                           " in NIC: %s on VN %d to dest %" PRIu64 ".\n",

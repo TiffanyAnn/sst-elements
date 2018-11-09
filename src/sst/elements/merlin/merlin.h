@@ -28,6 +28,12 @@
 #include <unordered_set>
 
 extern int downLinkCount; //how many times a downlink was encountered
+extern int minBlockedCount;
+extern int valBlockedCount;
+extern int dirPacketCount;
+extern int valPacketCount;
+extern int allPackets;
+
 extern std::unordered_multimap<unsigned int,unsigned int>umap; //the routing table
 extern std::unordered_set<unsigned int>downRoutes; //routes unavailable due to link failures
 extern std::unordered_set<unsigned int>DL;
