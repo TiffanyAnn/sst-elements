@@ -26,11 +26,15 @@
 #define TRACK_ID 131
 #define TRACK_PORT 4
 
-#define RUNTYPE 1 //0: create routing table
+#define RUNTYPE 0 //0: create routing table
 				  //1: read routing table from file
-#define FILENAME "TEST_16DF_rt.txt" //filename for the routing table
+#define FILENAME "TEST_16384_rt.txt" //filename for the routing table
 bool hasPrinted = false; //to print the routing table only once
 bool fileRead = false;
+
+int directRoute = 0;
+int valiantRoute = 0;
+int totalPackets = 0;
 
 using namespace SST;
 using namespace Merlin;
@@ -408,11 +412,11 @@ PortControl::finish() {
 	 #if RUNTYPE == 1
 	 	if(hasPrinted == false){
 	 		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
-	 		std::cout << "number of packets routed minimally: " << dirPacketCount << "\n";
-	 		std::cout << "number of packets adaptively routed: " << valPacketCount << "\n";
-	 		std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
-	 		std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
-	 		std::cout << "total packets: " << allPackets << "\n";
+	 		std::cout << "number of packets routed minimally: " << directRoute << "\n";
+	 		std::cout << "number of packets adaptively routed: " << valiantRoute << "\n";
+	 	//	std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
+	 	//	std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
+	 		std::cout << "total packets: " << totalPackets << "\n";
 	 		hasPrinted = true;
 	 	}
 	 #endif
@@ -728,7 +732,8 @@ PortControl::handle_input_n2r(Event* ev)
         rtr_event->setCreditReturnVC(vn);
         int curr_vc = rtr_event->getVC();
 	    topo->route(port_number, rtr_event->getVC(), rtr_event);
-		 if(event->getTrack() == true) std::cout << "hello from portControl n2r\n";
+		 if(rtr_event->getRouting() == 0) { directRoute++; }
+		 if(rtr_event->getRouting() == 1) { valiantRoute++; }
 	    input_buf[curr_vc].push(rtr_event);
 	    input_buf_count[curr_vc]++;
 
@@ -815,7 +820,10 @@ PortControl::handle_input_r2r(Event* ev)
 	    // Need to do the routing
 	    int curr_vc = event->getVC();
 	    topo->route(port_number, event->getVC(), event);
-		 		 if(event->getTrack() == true) std::cout << "hello from portControl r2r\n";
+		 if(event->getTrack() == true) { std::cout << "hello from portControl r2r\n";}
+		 if(event->getRouting() == 0) { directRoute++; }
+		 if(event->getRouting() == 1) { valiantRoute++; }
+		 totalPackets++;
 	    input_buf[curr_vc].push(event);
 	    input_buf_count[curr_vc]++;
 

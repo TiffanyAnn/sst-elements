@@ -25,13 +25,13 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#define ROUTE 4 /* 0 is 1st direct route,
+#define ROUTE 0 /* 0 is 1st direct route,
 				   1 is 2nd direct route,
 				   2 is 1st valiant route,
 				   3 is 2nd valiant route,
 				   set to any other number to disable */
 
-#define RUNTYPE 2 /* 0 - generates routing table
+#define RUNTYPE 0 /* 0 - generates routing table
 					 1 - loads the routing table from file and
 				         does adaptive routing for failed links
 				   2 - normal run */
@@ -360,6 +360,7 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
     if ( port >= params.p && port < (params.p + params.a-1) ){
       minPackets++; //this is considered a direct routing
       dirPacketCount += minPackets;
+		td_ev->setRouting(0); //set as direct route taken
       return;
 		}
 
@@ -369,6 +370,7 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
         if ( td_ev->dest.router == router_id) {
           minPackets++;
           dirPacketCount += minPackets;
+			 td_ev->setRouting(0); //set as direct route taken
           return;
         }
 
@@ -391,11 +393,14 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
       if (((ROUTE!=0)||(ROUTE!=1)) || (valiant_route_credits > (int)((double)direct_route_credits * adaptive_threshold)) ) {
         td_ev->setNextPort(valiant_route_port);
         valPackets++;
-        if(drc == -1) { downLinkEncountered++; minBlocked++; } //rerouted from direct route due to failed link
+		  td_ev->setRouting(1); //set as valiant route taken
+        if(drc == -1) {
+			  downLinkEncountered++; minBlocked++; } //rerouted from direct route due to failed link
       }
       else {
         td_ev->setNextPort(direct_route_port);
         minPackets++;
+		  td_ev->setRouting(0); //set as direct route taken
         if(vrc == -1) { downLinkEncountered++; valBlocked++; } //rerouted from valiant route due to link fail
       }
       //copy the tally variables to the global counts
@@ -411,6 +416,7 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
     if ( td_ev->dest.group == group_id ){
       minPackets++;
       dirPacketCount += minPackets;
+		td_ev->setRouting(0); //set as direct route taken
       return;
     }
 
@@ -514,6 +520,7 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
         td_ev->setNextPort(valiant_route_port);
         td_ev->global_slice = valiant_slice;
 				valPackets++;
+			td_ev->setRouting(1); //set as valiant route taken
 			#if RUNTYPE == 1
 				if((r0==true && r1==true) &&(temp_vrc < (int)((double)temp_drc*adaptive_threshold))){
 					downLinkEncountered++; minBlocked++;
@@ -530,6 +537,7 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
         td_ev->dest.mid_group = td_ev->dest.group;
         td_ev->setNextPort(direct_route_port);
         td_ev->global_slice = direct_slice;
+		  td_ev->setRouting(0); //set as direct route taken
 				minPackets++;
 				#if RUNTYPE == 1
 					if((r3 == true || r2 == true) && temp_vrc > (int)((double)temp_drc*adaptive_threshold)){

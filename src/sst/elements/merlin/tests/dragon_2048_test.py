@@ -20,14 +20,14 @@ if __name__ == "__main__":
     endPoint = TestEndPoint()
     #endPoint = ShiftEndPoint()
     print "\n-------------------------------------------------"
-    print "Dragonfly 2048(8:16:8:16) TestEndPoint"
+    print "Dragonfly 16384(16:32:16:32) TestEndPoint"
     print "adaptive-local, threshold 2.0, num_msgs=1"
     print "-------------------------------------------------\n"
 
-    sst.merlin._params["dragonfly:hosts_per_router"] = "8"
-    sst.merlin._params["dragonfly:routers_per_group"] = "16"
+    sst.merlin._params["dragonfly:hosts_per_router"] = "16"
+    sst.merlin._params["dragonfly:routers_per_group"] = "32"
     sst.merlin._params["dragonfly:intergroup_links"] = "16"
-    sst.merlin._params["dragonfly:num_groups"] = "24"
+    sst.merlin._params["dragonfly:num_groups"] = "32"
 
 #    sst.merlin._params["dragonfly:algorithm"] = "minimal"
     sst.merlin._params["dragonfly:algorithm"] = "adaptive-local"
@@ -36,23 +36,23 @@ if __name__ == "__main__":
     #glm = [0, 15, 1, 14, 2, 13, 3, 12, 4, 11, 5, 10, 6, 9, 7, 8]
     #topo.setGlobalLinkMap(glm)
     #topo.setRoutingModeRelative()
-    
-    
-    sst.merlin._params["link_bw"] = "4GB/s"
+
+
+    sst.merlin._params["link_bw"] = "25GB/s"
     #sst.merlin._params["link_bw:host"] = "2GB/s"
     #sst.merlin._params["link_bw:group"] = "1GB/s"
     #sst.merlin._params["link_bw:global"] = "1GB/s"
-    sst.merlin._params["link_lat"] = "20ns"
-    sst.merlin._params["flit_size"] = "8B"
-    sst.merlin._params["xbar_bw"] = "4GB/s"
-    sst.merlin._params["input_latency"] = "20ns"
-    sst.merlin._params["output_latency"] = "20ns"
-    sst.merlin._params["input_buf_size"] = "4kB"
-    sst.merlin._params["output_buf_size"] = "4kB"
+    sst.merlin._params["link_lat"] = "150ns"
+    sst.merlin._params["flit_size"] = "40B"
+    sst.merlin._params["xbar_bw"] = "25GB/s"
+    sst.merlin._params["input_latency"] = "150ns"
+    sst.merlin._params["output_latency"] = "150ns"
+    sst.merlin._params["input_buf_size"] = "25kB"
+    sst.merlin._params["output_buf_size"] = "25kB"
 
     sst.merlin._params["packets_to_send"] = "1"
     sst.merlin._params["num_messages"] = "1"
-    sst.merlin._params["shift"] = "1"    
+    sst.merlin._params["shift"] = "1"
     #sst.merlin._params["checkerboard"] = "1"
     sst.merlin._params["xbar_arb"] = "merlin.xbar_arb_lru"
 
@@ -60,9 +60,9 @@ if __name__ == "__main__":
     endPoint.prepParams()
     topo.setEndPoint(endPoint)
     topo.build()
-    
+
     #sst.setStatisticLoadLevel(9)
-        
+
     #sst.setStatisticOutput("sst.statOutputCSV");
     #sst.setStatisticOutputOptions({
     #    "filepath" : "stats.csv",

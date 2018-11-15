@@ -358,7 +358,8 @@ allPackets = packets;
     // routed packets
     if ( port >= params.p && port < (params.p + params.a-1)){
 		minPackets++;
-		dirPacketCount = minPackets;
+	//	dirPacketCount = minPackets;
+		td_ev->setRouting(0); //set as direct route taken
 		return;
 	}
 
@@ -367,7 +368,8 @@ allPackets = packets;
         // If we're at the correct router, no adaptive needed
         if ( td_ev->dest.router == router_id){
 			minPackets++;
-			dirPacketCount = minPackets;
+		//	dirPacketCount = minPackets;
+			td_ev->setRouting(0); //set as direct route taken
 			return;
 		}
 
@@ -390,6 +392,7 @@ allPackets = packets;
         if (((ROUTE!=0) || (ROUTE!=1)) || (valiant_route_credits > (int)((double)direct_route_credits * adaptive_threshold)) ) {
             td_ev->setNextPort(valiant_route_port);
 			valPackets++;
+			td_ev->setRouting(1); //set as direct route not taken
 			if(drc == -1) { downLinkEncountered++; minBlocked++; }
 			if(ev->getTrack() == true){
 				std::cout << "taking valiant route\n";
@@ -400,6 +403,7 @@ allPackets = packets;
         else {
             td_ev->setNextPort(direct_route_port);
 			minPackets++;
+			td_ev->setRouting(0); //set as direct route taken
 			if(vrc == -1){ downLinkEncountered++; valBlocked++; }
 			if(ev->getTrack() == true){
                 std::cout << "taking direct route\n";
@@ -410,15 +414,16 @@ allPackets = packets;
 				downLinkCount = downLinkEncountered;
 				minBlockedCount = minBlocked;
 				valBlockedCount = valBlocked;
-				dirPacketCount = minPackets;
-				valPacketCount = valPackets;
+			//	dirPacketCount = minPackets;
+			//	valPacketCount = valPackets;
         return;
     }
 
     // If the dest is in the same group, no need to adaptively route
     if ( td_ev->dest.group == group_id ){
 		 minPackets++;
-		 dirPacketCount = minPackets;
+		 //dirPacketCount = minPackets;
+		 td_ev->setRouting(0); //set as direct route taken
 		 return;
 	}
 
@@ -536,6 +541,7 @@ allPackets = packets;
 		if((r0==true && r1 == true) && temp_vrc < (int)((double)temp_drc*adaptive_threshold)){ downLinkEncountered++; minBlocked++; }
 #endif
 		valPackets++;
+		td_ev->setRouting(1); //set as valiant route taken
         td_ev->dest.mid_group = td_ev->dest.mid_group_shadow;
         td_ev->setNextPort(valiant_route_port);
         td_ev->global_slice = valiant_slice;
@@ -550,6 +556,7 @@ allPackets = packets;
 		if((r3 == true || r2 == true) && temp_vrc > (int)((double)temp_drc*adaptive_threshold)){ downLinkEncountered++; valBlocked++; }
 #endif
 		minPackets++;
+		td_ev->setRouting(0); //set as direct route taken
 		td_ev->dest.mid_group = td_ev->dest.group;
         td_ev->setNextPort(direct_route_port);
         td_ev->global_slice = direct_slice;
@@ -562,8 +569,8 @@ allPackets = packets;
 	downLinkCount = downLinkEncountered;
 	minBlockedCount = minBlocked;
     valBlockedCount = valBlocked;
-	dirPacketCount = minPackets;
-	valPacketCount = valPackets;
+	//dirPacketCount = minPackets;
+	//valPacketCount = valPackets;
 
 }
 

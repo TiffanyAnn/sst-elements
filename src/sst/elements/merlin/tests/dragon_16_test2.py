@@ -28,9 +28,9 @@ if __name__ == "__main__":
     sst.merlin._params["dragonfly:routers_per_group"] = "2"
     sst.merlin._params["dragonfly:intergroup_links"] = "1"
     sst.merlin._params["dragonfly:num_groups"] = "4"
-#    sst.merlin._params["dragonfly:algorithm"] = "minimal"
+   # sst.merlin._params["dragonfly:algorithm"] = "minimal"
     sst.merlin._params["dragonfly:algorithm"] = "adaptive-local"
-    sst.merlin._params["dragonfly:adaptive_threshold"] = "2.0"
+    sst.merlin._params["dragonfly:adaptive_threshold"] = "0.5"
 
     #glm = [0, 15, 1, 14, 2, 13, 3, 12, 4, 11, 5, 10, 6, 9, 7, 8]
     #topo.setGlobalLinkMap(glm)

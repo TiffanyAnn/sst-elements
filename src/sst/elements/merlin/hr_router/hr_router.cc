@@ -1,10 +1,10 @@
 // Copyright 2009-2018 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
+//
 // Copyright (c) 2009-2018, NTESS
 // All rights reserved.
-// 
+//
 // Portions are copyright of other developers:
 // See the file CONTRIBUTORS.TXT in the top level directory
 // the distribution for more information.
@@ -35,17 +35,23 @@ using namespace std;
 int hr_router::num_routers = 0;
 int hr_router::print_debug = 0;
 
+//int dirPacketCount;
+//int valPacketCount;
+
+int dirPacks = 0;
+int valPacks = 0;
+
 // Helper functions used only in this file
 static string trim(string str)
 {
     // Find whitespace in front
     int front_index = 0;
     while ( isspace(str[front_index]) ) front_index++;
-    
+
     // Find whitespace in back
     int back_index = str.length() - 1;
     while ( isspace(str[back_index]) ) back_index--;
-    
+
     return str.substr(front_index,back_index-front_index+1);
 }
 
@@ -54,7 +60,7 @@ static void split(string input, string delims, vector<string>& tokens) {
     size_t start = 0;
     size_t stop = 0;;
     vector<string> ret;
-    
+
     do {
         stop = input.find_first_of(delims,start);
         tokens.push_back(input.substr(start,stop-start));
@@ -157,7 +163,7 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
     }
 
     std::string xbar_arb = params.find<std::string>("xbar_arb","merlin.xbar_arb_lru");
-    
+
     // Parse all the timing parameters
 
     // Flit size
@@ -172,7 +178,7 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
         // Need to convert to bits per second
         flit_size *= UnitAlgebra("8b/B");
     }
-    
+
     // Link BW default.  Can be overwritten using logical groups
     std::string link_bw_s = params.find<std::string>("link_bw");
     UnitAlgebra link_bw(link_bw_s);
@@ -181,7 +187,7 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
         // Need to convert to bits per second
         link_bw *= UnitAlgebra("8b/B");
     }
-    
+
     // Cross bar bandwidth
     std::string xbar_bw_s = params.find<std::string>("xbar_bw");
     if ( xbar_bw_s == "" ) {
@@ -208,13 +214,13 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
     std::string input_buf_size = params.find<std::string>("input_buf_size", "0");
     std::string output_buf_size = params.find<std::string>("output_buf_size", "0");
 
-    
+
     // Naming convention is from point of view of the xbar.  So,
     // in_port_busy is >0 if someone is writing to that xbar port and
     // out_port_busy is >0 if that xbar port being read.
     in_port_busy = new int[num_ports];
     out_port_busy = new int[num_ports];
-    
+
     progress_vcs = new int[num_ports];
 
     std::string inspector_config = params.find<std::string>("network_inspectors", "");
@@ -222,13 +228,13 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
 
     bool oql_track_port = params.find<bool>("oql_track_port","false");
     bool oql_track_remote = params.find<bool>("oql_track_remote","false");
-    
+
     params.enableVerify(false);
     for ( int i = 0; i < num_ports; i++ ) {
         in_port_busy[i] = 0;
         out_port_busy[i] = 0;
         progress_vcs[i] = -1;
-        
+
         std::stringstream port_name;
         port_name << "port";
         port_name << i;
@@ -263,15 +269,15 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
                                    inspector_names,
 								   std::stof(getLogicalGroupParam(params,topo,i,"dlink_thresh", "-1")),
                                    oql_track_port,oql_track_remote);
-        
+
     //	}
 	}
     params.enableVerify(true);
-    
+
     // Get the Xbar arbitration
     Params empty_params; // Empty params sent to subcomponents
     arb = static_cast<XbarArbitration*>(loadSubComponent(xbar_arb, this, empty_params));
-    
+
     // if ( params.find_integer("debug", 0) ) {
     //     if ( num_routers == 0 ) {
     //         signal(SIGUSR2, &hr_router::sigHandler);
@@ -287,7 +293,7 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
 #if VERIFY_DECLOCKING
     clocking = true;
 #endif
-    
+
     // Check to make sure that the xbar BW is equal to or greater than
     // the link BW, otherwise the model runs into problems
     // if ( xbar_tc->getFactor() > link_tc->getFactor() ) {
@@ -316,7 +322,7 @@ hr_router::notifyEvent()
     clocking = true;
     Cycle_t next_cycle = getNextClockCycle( xbar_tc );
 #else
-    Cycle_t next_cycle = reregisterClock( xbar_tc, my_clock_handler); 
+    Cycle_t next_cycle = reregisterClock( xbar_tc, my_clock_handler);
 #endif
 
     int64_t elapsed_cycles = next_cycle - unclocked_cycle;
@@ -354,7 +360,7 @@ hr_router::dumpState(std::ostream& stream)
 	stream << "  Output_busy: " << out_port_busy[i] << std::endl;
 	stream << "  Input_Busy: " <<  in_port_busy[i] << std::endl;
     }
-    
+
 }
 
 void
@@ -405,7 +411,7 @@ hr_router::clock_handler(Cycle_t cycle)
         else {
             return false;
         }
-    
+
 #endif
     }
     // Loop through all the events at the heads of the queues and call
@@ -420,23 +426,25 @@ hr_router::clock_handler(Cycle_t cycle)
             index++;
         }
     }
-    
+
     // All we need to do is arbitrate the crossbar
 #if VERIFY_DECLOCKING
     arb->arbitrate(ports,in_port_busy,out_port_busy,progress_vcs,clocking);
 #else
     arb->arbitrate(ports,in_port_busy,out_port_busy,progress_vcs);
 #endif
-    
+
     // Move the events and decrement the busy values
     for ( int i = 0; i < num_ports; i++ ) {
         // if ( progress_vcs[i] != -1 ) {
         if ( progress_vcs[i] > -1 ) {
             internal_router_event* ev = ports[i]->recv(progress_vcs[i]);
             ports[ev->getNextPort()]->send(ev,ev->getVC());
+            if(ev->getRouting() == 0){ dirPacks++; dirPacketCount = dirPacks;}
+            if(ev->getRouting() == 1){ valPacks++; valPacketCount = valPacks;}
             //if(ev->getTrack() == true){ std::cout << "" << id << ": " << "Moving VC " << progress_vcs[i] <<
              //	" for port " << i << " to port " << ev->getNextPort() << std::endl;}
-            
+
            /* if(ev->getTrack() == true){//if ( ev->getTraceType() == SimpleNetwork::Request::FULL ) {
                 output.output("TRACE(%d): %" PRIu64 " ns: Copying event (src = %d, dest = %d) "
                               "over crossbar in router %d (%s) from port %d, VC %d to port"
@@ -451,13 +459,13 @@ hr_router::clock_handler(Cycle_t cycle)
                               progress_vcs[i] ,
                               ev->getNextPort(),
                               ev->getVC()) */;
-                              
+
 
                // std::cout << "TRACE(" << ev->getTraceID() << "): " << getCurrentSimTimeNano()
                //            << " ns: Copying event (src = " << ev->getSrc() << ","
                //            << " dest = "<< ev->getDest() << ") over crossbar in router " << id
                //            << " (" << getName() << ")"
-               //            << " from port " << i << ", VC " << progress_vcs[i] 
+               //            << " from port " << i << ", VC " << progress_vcs[i]
                //            << " to port " << ev->getNextPort() << ", VC " << ev->getVC()
                //            << "." << std::endl;
             //}
@@ -472,7 +480,7 @@ hr_router::clock_handler(Cycle_t cycle)
         if ( in_port_busy[i] != 0 ) in_port_busy[i]--;
         if ( out_port_busy[i] != 0 ) out_port_busy[i]--;
     }
-    
+
     return false;
 }
 
@@ -488,7 +496,7 @@ void hr_router::finish()
     for ( int i = 0; i < num_ports; i++ ) {
     	ports[i]->finish();
     }
-    
+
 }
 
 void
@@ -526,7 +534,7 @@ hr_router::init(unsigned int phase)
         }
     }
 
-    
+
     // Always do the above.  A few specific things to do during init
 
     // After phase 1, all the PortControl blocks will have reported
@@ -577,7 +585,7 @@ hr_router::complete(unsigned int phase)
             }
             delete ire;
         }
-    }    
+    }
 }
 
 void
@@ -633,7 +641,7 @@ hr_router::reportSetVCs(int port, int vcs)
 
 //     for ( int i = 0; i < num_ports; i++ ) {
 //         ports[i]->initVCs(num_vcs,&vc_heads[i*num_vcs],&xbar_in_credits[i*num_vcs],in_buf_sizes,out_buf_sizes);
-//     }    
+//     }
 
 //     // Now that we have the number of VCs we can finish initializing
 //     // arbitration logic
@@ -660,7 +668,7 @@ hr_router::init_vcs()
         xbar_in_credits[i] = 0;
         output_queue_lengths[i] = 0;
     }
-    
+
     for ( int i = 0; i < num_ports; i++ ) {
         ports[i]->initVCs(num_vcs,&vc_heads[i*num_vcs],&xbar_in_credits[i*num_vcs],&output_queue_lengths[i*num_vcs]);
     }
@@ -673,5 +681,5 @@ hr_router::init_vcs()
     arb->setPorts(num_ports,num_vcs);
 
     vcs_initialized = true;
-    
+
 }
