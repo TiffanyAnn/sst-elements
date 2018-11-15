@@ -24,9 +24,9 @@
 #include <sstream>
 #include "merlin.h"
 
-#define RUNTYPE 1 //0: create routing table
+#define RUNTYPE 0 //0: create routing table
 				  //1: read routing table from file
-#define FILENAME "TEST_16DF_rt.txt" //filename for the routing table
+#define FILENAME "TEST_16384_rt.txt" //filename for the routing table
 static bool hasPrinted = false; //to print the routing table only once
 static bool fileRead = false;
 

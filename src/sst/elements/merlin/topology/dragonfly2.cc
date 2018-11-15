@@ -26,13 +26,13 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#define ROUTE 4 /* 0 is 1st direct route,
+#define ROUTE 0 /* 0 is 1st direct route,
 				   1 is 2nd direct route,
 				   2 is 1st valiant route,
 				   3 is 2nd valiant route,
 				   set to any other number to disable */
 
-#define RUNTYPE 2 /* 0 - generates routing table
+#define RUNTYPE 0 /* 0 - generates routing table
 					 1 - loads the routing table from file and
 				         does adaptive routing for failed links */
 				  // 2 - normal run

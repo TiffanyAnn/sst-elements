@@ -28,7 +28,7 @@
 
 #define RUNTYPE 0 //0: create routing table
 				  //1: read routing table from file
-#define FILENAME "TEST_16384_rt.txt" //filename for the routing table
+//#define FILENAME "TEST_16384_rt.txt" //filename for the routing table
 bool hasPrinted = false; //to print the routing table only once
 bool fileRead = false;
 
@@ -204,7 +204,7 @@ PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
     }
 
 	//std::cout << rtr_id << "/" << port_number << " " << link_bw << "\n";
-//  	std::cout << "rtr_id: " << rtr_id << " port: " << port_number << " " << topo->getPortLogicalGroup(port_number) << "\n";
+  	std::cout << "rtr_id: " << rtr_id << " port: " << port_number << " " << topo->getPortLogicalGroup(port_number) << "\n";
 	// This is the self link to enable the logic for adaptive link widths.
 	// The initial call to the handler dynlink_timing->send is made in setup.
 	dynlink_timing = rif->configureSelfLink(link_port_name + "_dynlink_timing", "10us",
@@ -820,7 +820,6 @@ PortControl::handle_input_r2r(Event* ev)
 	    // Need to do the routing
 	    int curr_vc = event->getVC();
 	    topo->route(port_number, event->getVC(), event);
-		 if(event->getTrack() == true) { std::cout << "hello from portControl r2r\n";}
 		 if(event->getRouting() == 0) { directRoute++; }
 		 if(event->getRouting() == 1) { valiantRoute++; }
 		 totalPackets++;

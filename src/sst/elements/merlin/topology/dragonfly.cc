@@ -55,10 +55,10 @@ int valPackets = 0;
 int packets = 0;*/
 
 // need to put info into single variable: grp | rtr | port
-unsigned int downLink0 = (1111 << 16) | (1110 << 8) | 17;
-unsigned int downLink1 = (1111 << 16) | (1119 << 8) | 6;
-unsigned int downLink2 = (1111 << 16) | (1110 << 8) | 3;
-unsigned int downLink3 = (1112 << 16) | (1110 << 8) | 4;
+unsigned int downLink0 = (1111 << 16) | (1110 << 8) | 117;
+unsigned int downLink1 = (1111 << 16) | (1119 << 8) | 116;
+unsigned int downLink2 = (1111 << 16) | (1110 << 8) | 113;
+unsigned int downLink3 = (1112 << 16) | (1110 << 8) | 114;
 
 //insert the failed links into the set
 std::unordered_set<unsigned int>DL= { downLink0, downLink1,
