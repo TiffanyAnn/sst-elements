@@ -25,13 +25,13 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#define ROUTE 0 /* 0 is 1st direct route,
+/*#define ROUTE 0 -- 0 is 1st direct route,
 				   1 is 2nd direct route,
 				   2 is 1st valiant route,
 				   3 is 2nd valiant route,
 				   set to any other number to disable */
 
-#define RUNTYPE 0 /* 0 - generates routing table
+/*#define RUNTYPE 0 -- 0 - generates routing table
 					 1 - loads the routing table from file and
 				         does adaptive routing for failed links
 				   2 - normal run */
@@ -45,6 +45,8 @@ int valBlockedCount;
 int dirPacketCount;
 int valPacketCount;
 int allPackets;
+
+int ROUTE, RUNTYPE;
 
 //local place holder variables
 /*int downLinkEncountered = 0;
@@ -61,7 +63,7 @@ unsigned int downLink2 = (1111 << 16) | (1110 << 8) | 113;
 unsigned int downLink3 = (1112 << 16) | (1110 << 8) | 114;
 
 //insert the failed links into the set
-std::unordered_set<unsigned int>DL= { downLink0, downLink1,
+std::unordered_set<unsigned int>downPorts= { downLink0, downLink1,
 								 	  downLink2, downLink3 };
 
 std::unordered_multimap<unsigned int,unsigned int>umap;
@@ -117,6 +119,8 @@ topo_dragonfly::topo_dragonfly(Component* comp, Params &p) :
     params.h = (uint32_t)p.find<int>("dragonfly:intergroup_per_router");
     params.g = (uint32_t)p.find<int>("dragonfly:num_groups");
     params.n = (uint32_t)p.find<int>("dragonfly:intergroup_links");
+	 ROUTE=p.find<int>("dragonfly:route");
+	 RUNTYPE=p.find<int>("dragonfly:run");
 
     std::string global_route_mode_s = p.find<std::string>("dragonfly:global_route_mode","absolute");
     if ( global_route_mode_s == "absolute" ) global_route_mode = ABSOLUTE;
@@ -125,8 +129,8 @@ topo_dragonfly::topo_dragonfly(Component* comp, Params &p) :
         output.fatal(CALL_INFO, -1, "Invalid dragonfly:global_route_mode specified: %s.\n",global_route_mode_s.c_str());
     }
 
-    std::string route_algo = "adaptive-local";//p.find<std::string>("dragonfly:algorithm", "minimal");
-
+//    std::string route_algo = "adaptive-local";//p.find<std::string>("dragonfly:algorithm", "minimal");
+ 	std::string route_algo = p.find<std::string>("dragonfly:algorithm", "minimal");
     adaptive_threshold = 2.0; //p.find<double>("dragonfly:adaptive_threshold",2.0);
 
     // Get the global link map
@@ -296,22 +300,23 @@ topo_dragonfly::route(int port, int vc, internal_router_event* ev)
         if(ev->getTrack() == true){
         	printf("ev->dest: %u dest_grp: %u dest_rtr: %u next_port: %u\n",
                     ev->getDest(), td_ev->dest.group, td_ev->dest.router, next_port);
-    		unsigned int src_to_dest0 = (0 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		unsigned int src_to_dest1 = (1 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		unsigned int src_to_dest2 = (2 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		unsigned int src_to_dest3 = (3 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		printf("r0: %d r1: %d r2: %d r3: %d\n",  src_to_dest0,  src_to_dest1, src_to_dest2, src_to_dest3);
+    	//	unsigned int src_to_dest0 = (0 << 16) | (ev->getSrc() << 8) | ev->getDest();
+    	//	unsigned int src_to_dest1 = (1 << 16) | (ev->getSrc() << 8) | ev->getDest();
+    	//	unsigned int src_to_dest2 = (2 << 16) | (ev->getSrc() << 8) | ev->getDest();
+    	//	unsigned int src_to_dest3 = (3 << 16) | (ev->getSrc() << 8) | ev->getDest();
+    	//	printf("r0: %d r1: %d r2: %d r3: %d\n",  src_to_dest0,  src_to_dest1, src_to_dest2, src_to_dest3);
     	}
 
         output.verbose(CALL_INFO, 1, 1, "%u:%u, Recv: %d/%d  Setting Next Port/VC:  %u/%u\n", group_id, router_id, port, vc, next_port, td_ev->getVC());
         td_ev->setNextPort(next_port);
 
-    #if RUNTYPE == 0
+	 if (RUNTYPE == 0){
+    //#if RUNTYPE == 0
     		unsigned int src_to_dest = (ROUTE << 16) | (ev->getSrc() << 8) | ev->getDest();
     		unsigned int link = (group_id << 16) | (router_id << 8) | port;
     		umap.insert(std::make_pair(src_to_dest,link));
-    #endif
-
+//    #endif
+}
     output.verbose(CALL_INFO, 1, 1, "%u:%u, Recv: %d/%d  Setting Next Port/VC:  %u/%u\n", group_id, router_id, port, vc, next_port, td_ev->getVC());
     td_ev->setNextPort(next_port);
 }
@@ -329,6 +334,7 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
     topo_dragonfly_event *td_ev = static_cast<topo_dragonfly_event*>(ev);
 	 packets++;
 	 allPackets += packets;
+
 #if RUNTYPE == 1
     	bool r0 = false; bool r1 = false;
     	bool r2 = false; bool r3 = false;
@@ -347,6 +353,7 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
           exit( EXIT_FAILURE);
     	}
 #endif
+	//}
 
     if(ev->getTrack() == true){
       std::cout << "========== reroute() ==========\n";
@@ -382,13 +389,14 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
 
         int drc = 0; int vrc = 0; //variables for checking if rerouting due to failed link
 
+ // if(RUNTYPE == 1){
 #if RUNTYPE == 1
   // direct routes are down
   if(r0 == true || r1 == true) { direct_route_credits = -1; drc = -1; }
   // valiant routes are down
   if(r2 == true || r3 == true) { valiant_route_credits = -1; vrc = -1; }
 #endif
-
+  //}
 // (ROUTE!=0) || (ROUTE!=1) --> need for RUNTYPE==0. Won't take adaptive if a direct route has been specified
       if (((ROUTE!=0)||(ROUTE!=1)) || (valiant_route_credits > (int)((double)direct_route_credits * adaptive_threshold)) ) {
         td_ev->setNextPort(valiant_route_port);

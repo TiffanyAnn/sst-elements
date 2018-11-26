@@ -26,9 +26,11 @@
 #define TRACK_ID 131
 #define TRACK_PORT 4
 
-#define RUNTYPE 0 //0: create routing table
+//#define RUNTYPE 0 //0: create routing table
 				  //1: read routing table from file
 //#define FILENAME "TEST_16384_rt.txt" //filename for the routing table
+//int RUNTYPE;
+//std::string FILENAME;
 bool hasPrinted = false; //to print the routing table only once
 bool fileRead = false;
 
@@ -36,9 +38,31 @@ int directRoute = 0;
 int valiantRoute = 0;
 int totalPackets = 0;
 
+const int RTRS_PER_GRP = 32;
+
 using namespace SST;
 using namespace Merlin;
 using namespace Interfaces;
+
+void writeRoutes(){
+	FILE * routeFile;
+    routeFile = fopen (FILENAME.c_str(),"a");
+    for (unsigned i=0; i< umap.bucket_count(); ++i) {
+    	bool printed = false;
+        for(auto itr = umap.begin(i);itr !=umap.end(i); ++itr){
+        	unsigned int src_dest = itr->first;
+            unsigned int theLink = itr->second;
+            if(printed == false){
+            	fprintf(routeFile, "\n%d:%d", src_dest, theLink);
+                printed = true;
+            }
+            else
+            	fprintf(routeFile, ",%d", theLink);
+        }
+    }
+    fclose (routeFile);
+std::cout << "route written to file\n";
+}
 
 void
 PortControl::sendTopologyEvent(TopologyEvent* ev)
@@ -140,7 +164,7 @@ PortControl::recv(int vc)
     return event;
 }
 // time_base is a frequency which represents the bandwidth of the link in flits/second.
-PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
+PortControl::PortControl(Params &p, Router* rif, int rtr_id, std::string link_port_name,
                          int port_number, const UnitAlgebra& link_bw, const UnitAlgebra& flit_size,
                          Topology *topo,
                          SimTime_t input_latency_cycles, std::string input_latency_timebase,
@@ -203,8 +227,7 @@ PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
         break;
     }
 
-	//std::cout << rtr_id << "/" << port_number << " " << link_bw << "\n";
-  	std::cout << "rtr_id: " << rtr_id << " port: " << port_number << " " << topo->getPortLogicalGroup(port_number) << "\n";
+
 	// This is the self link to enable the logic for adaptive link widths.
 	// The initial call to the handler dynlink_timing->send is made in setup.
 	dynlink_timing = rif->configureSelfLink(link_port_name + "_dynlink_timing", "10us",
@@ -268,6 +291,10 @@ PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
         ni->initialize(port_name);
         network_inspectors.push_back(ni);
     }
+
+	 //get Params
+	 //FILENAME = p.find<std::string>("rt_filename", "");
+	 //RUNTYPE=p.find<int>("dragonfly:run");
 }
 
 
@@ -409,6 +436,14 @@ PortControl::finish() {
         network_inspectors[i]->finish();
     }
 
+	 #if RUNTYPE == 0
+	 	//print route info to file
+	 	if(hasPrinted == false){
+	 		writeRoutes();
+	 		hasPrinted = true;
+	 	}
+	 #endif
+
 	 #if RUNTYPE == 1
 	 	if(hasPrinted == false){
 	 		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
@@ -505,6 +540,15 @@ PortControl::init(unsigned int phase) {
             init_ev = dynamic_cast<RtrInitEvent*>(ev);
             remote_port_number = init_ev->int_value;
             delete init_ev;
+
+				unsigned int local, remote;
+			/*	std::cout << "local:\n" << rtr_id/RTRS_PER_GRP << "\n" << rtr_id%RTRS_PER_GRP << "\n" << port_number << "\n";*/
+				local = ((rtr_id/RTRS_PER_GRP) << 16) | ((rtr_id%RTRS_PER_GRP) << 8) | (port_number);
+				remote = ((remote_rtr_id/RTRS_PER_GRP) << 16) | ((remote_rtr_id%RTRS_PER_GRP) << 8) | (remote_port_number);
+
+				std::cout << local << "\n" << remote << "\n";
+
+			/*	std::cout << "remote:\n" << remote_rtr_id/RTRS_PER_GRP << "\n" << remote_rtr_id%RTRS_PER_GRP << "\n" << remote_port_number << "\n";*/
         }
         }
         break;
@@ -743,18 +787,6 @@ PortControl::handle_input_n2r(Event* ev)
             parent->inc_vcs_with_data();
 	    }
 
-	    /*if(event->getTrack() == true) {//if ( event->request->getTraceType() != SST::Interfaces::SimpleNetwork::Request::NONE ) {
-            output.output("TRACE(%d): %" PRIu64 " ns: Received an event on port %d in router %d"
-                          " (%s) on VC %d from src %" PRIu64 " to dest %" PRIu64 ".\n",
-                          event->getTraceID(),
-                          parent->getCurrentSimTimeNano(),
-                          port_number,
-                          rtr_id,
-                          parent->getName().c_str(),
-                          curr_vc,
-                          event->request->src,
-                          event->request->dest);
-	    }*/
 
 	    if ( parent->getRequestNotifyOnEvent() ) parent->notifyEvent();
 	}
@@ -833,19 +865,6 @@ PortControl::handle_input_r2r(Event* ev)
             parent->inc_vcs_with_data();
 	    }
 
-/*if(event->getTrack() == true){//	    if ( event->getTraceType() != SimpleNetwork::Request::NONE ) {
-            output.output("TRACE(%d): %" PRIu64 " ns: Received an event on port %d in router %d"
-                          " (%s) on VC %d from src %d to dest %d.\n",
-                          event->getTraceID(),
-                          parent->getCurrentSimTimeNano(),
-                          port_number,
-                          rtr_id,
-                          parent->getName().c_str(),
-                          curr_vc,
-                          event->getSrc(),
-                          event->getDest());
-
-	    }*/
 
 	    if ( parent->getRequestNotifyOnEvent() ) parent->notifyEvent();
 	}
@@ -961,17 +980,6 @@ PortControl::handle_output_r2r(Event* ev) {
             is_idle = false;
         }
 
-	  /* if(send_event->getTrack() == true){// if ( send_event->getTraceType() == SimpleNetwork::Request::FULL ) {
-            output.output("TRACE(00): %" PRIu64 " ns: Sent and event to router from PortControl in router: %d"
-                          " (%s) on VC %d from src %d to dest %d.\n",
-                          parent->getCurrentSimTimeNano(),
-                          rtr_id,
-                          parent->getName().c_str(),
-                          send_event->getVC(),
-                          send_event->getSrc(),
-                          send_event->getDest());
-
-	    }*/
         send_bit_count->addData(send_event->getEncapsulatedEvent()->request->size_in_bits);
         send_packet_count->addData(1);
 
@@ -1116,18 +1124,6 @@ PortControl::handle_output_n2r(Event* ev) {
             is_idle = false;
         }
 
-	    /*if(send_event->getTrack() == true) {//if ( send_event->getTraceType() == SimpleNetwork::Request::FULL ) {
-            output.output("TRACE(%d01): %" PRIu64 " ns: Sent an event to router from PortControl in router: %d"
-                          " (%s) on VC %d from src %d to dest %d.\n",
-                          send_event->getTraceID(),
-                          parent->getCurrentSimTimeNano(),
-                          rtr_id,
-                          parent->getName().c_str(),
-                          send_event->getVC(),
-                          send_event->getSrc(),
-                          send_event->getDest());
-
-	    }*/
         send_bit_count->addData(send_event->getEncapsulatedEvent()->request->size_in_bits);
         send_packet_count->addData(1);
 	    if ( host_port ) {

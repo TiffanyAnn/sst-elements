@@ -24,9 +24,10 @@
 #include <sstream>
 #include "merlin.h"
 
-#define RUNTYPE 0 //0: create routing table
+//#define RUNTYPE 0 //0: create routing table
 				  //1: read routing table from file
-#define FILENAME "TEST_16384_rt.txt" //filename for the routing table
+//#define FILENAME "TEST_16384_rt.txt" //filename for the routing table
+std::string FILENAME;
 static bool hasPrinted = false; //to print the routing table only once
 static bool fileRead = false;
 
@@ -51,8 +52,8 @@ void readRoutes(){
         routeKey = std::stoul (routeID);
         while(std::getline(temp, line, ',') && found == false){
            portInRoute = std::stoul(line);
-           auto search = DL.find(portInRoute); //check port against down links
-           if(search != DL.end()) //port is down
+           auto search = downPorts.find(portInRoute); //check port against down links
+           if(search != downPorts.end()) //port is down
            {
            		downRoutes.insert(routeKey);
              	found = true;
@@ -65,9 +66,17 @@ std::cout << "route read from file\n";
 
 }
 
-void writeRoutes(){
+void readDownPorts(){
+	std::ifstream  fin("ports.txt");
+   unsigned int port;
+	while (fin >> port){
+      downPorts.insert(port);
+   }
+}
+
+/*void writeRoutes(){
 	FILE * routeFile;
-    routeFile = fopen (FILENAME,"a");
+    routeFile = fopen (FILENAME.c_str(),"a");
     for (unsigned i=0; i< umap.bucket_count(); ++i) {
     	bool printed = false;
         for(auto itr = umap.begin(i);itr !=umap.end(i); ++itr){
@@ -83,7 +92,7 @@ void writeRoutes(){
     }
     fclose (routeFile);
 std::cout << "route written to file\n";
-}
+}*/
 
 LinkControl::LinkControl(Component* parent, Params &params) :
     SST::Interfaces::SimpleNetwork(parent),
@@ -109,6 +118,7 @@ LinkControl::LinkControl(Component* parent, Params &params) :
     else {
         merlin_abort.fatal(CALL_INFO,-1,"Unknown checkerboard_alg requested: %s\n",checkerboard_alg.c_str());
     }
+    FILENAME = params.find<std::string>("rt_filename", "");
 }
 
 bool
@@ -168,8 +178,10 @@ LinkControl::initialize(const std::string& port_name, const UnitAlgebra& link_bw
 
 	// Read in routing information and check for downLinks
 #if RUNTYPE == 1
-	if(fileRead == false)
+	if(fileRead == false){
+      readDownPorts();
 		readRoutes();
+   }
 #endif
     return true;
 }
@@ -348,14 +360,15 @@ void LinkControl::finish(void)
         }
     }
 
-#if RUNTYPE == 0
+/*#if RUNTYPE == 0
 	//print route info to file
 	if(hasPrinted == false){
 		writeRoutes();
 		hasPrinted = true;
 	}
-#endif
-#if RUNTYPE == 1
+#endif*/
+
+/*#if RUNTYPE == 1
 	if(hasPrinted == false){
 		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
 		std::cout << "number of packets routed minimally: " << dirPacketCount << "\n";
@@ -365,7 +378,7 @@ void LinkControl::finish(void)
 		std::cout << "total packets: " << allPackets << "\n";
 		hasPrinted = true;
 	}
-#endif
+#endif*/
 }
 
 

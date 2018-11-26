@@ -34,9 +34,12 @@ extern int dirPacketCount;
 extern int valPacketCount;
 extern int allPackets;
 
+extern int RUNTYPE;
+extern std::string FILENAME;
+
 extern std::unordered_multimap<unsigned int,unsigned int>umap; //the routing table
 extern std::unordered_set<unsigned int>downRoutes; //routes unavailable due to link failures
-extern std::unordered_set<unsigned int>DL;
+extern std::unordered_set<unsigned int>downPorts;
 using namespace SST;
 
 namespace SST {
@@ -45,7 +48,7 @@ namespace Merlin {
     // Library wide Output object.  Mostly used for fatal() calls
     static Output merlin_abort("Merlin: ", 5, -1, Output::STDERR);
     static Output merlin_abort_full("Merlin: @f, line @l: ", 5, -1, Output::STDOUT);
-    
+
 }
 }
 

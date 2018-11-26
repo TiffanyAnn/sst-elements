@@ -246,20 +246,7 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
         //                            1, input_latency, 1, output_latency,
         //                            input_buf_size, output_buf_size, inspector_names);
 
-/*		if((id == 1006 && i == 3) || (id == 1006 && i == 2)){
-			ports[i] = new PortControl(this, id, port_name.str(), i,
-                                   (link_bw*0),
-                                   flit_size, topo,
-                                   1, getLogicalGroupParam(params,topo,i,"input_latency","0ns"),
-                                   1, getLogicalGroupParam(params,topo,i,"output_latency","0ns"),
-                                   getLogicalGroupParam(params,topo,i,"input_buf_size"),
-                                   getLogicalGroupParam(params,topo,i,"output_buf_size"),
-                                   inspector_names,
-                                   std::stof(getLogicalGroupParam(params,topo,i,"dlink_thresh", "-1")),
-                                   oql_track_port,oql_track_remote);
-		}
-		else{*/
-        	ports[i] = new PortControl(this, id, port_name.str(), i,
+        	ports[i] = new PortControl(params, this, id, port_name.str(), i,
                                    getLogicalGroupParamUA(params,topo,i,"link_bw"),
                                    flit_size, topo,
                                    1, getLogicalGroupParam(params,topo,i,"input_latency","0ns"),
