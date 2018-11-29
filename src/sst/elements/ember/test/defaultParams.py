@@ -6,13 +6,13 @@ netConfig = {
 
 networkParams = {
     "packetSize" : "2048B",
-    "link_bw" : "4GB/s",
-    "link_lat" : "40ns",
-    "input_latency" : "50ns",
-    "output_latency" : "50ns",
-    "flitSize" : "8B",
-    "input_buf_size" : "14KB",
-    "output_buf_size" : "14KB",
+    "link_bw" : "100GB/s",
+    "link_lat" : "150ns",
+    "input_latency" : "150ns",
+    "output_latency" : "150ns",
+    "flitSize" : "40B",
+    "input_buf_size" : "100KB",
+    "output_buf_size" : "100KB",
 }
 
 nicParams = {
