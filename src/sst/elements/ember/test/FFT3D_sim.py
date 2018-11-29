@@ -7,7 +7,8 @@ def getWorkFlow( defaults ):
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
-    motif['cmd'] = "Sweep3D pex=128 pey=128 nx=256 ny=256 nz=256 nodeflops=75000000000000 fields_per_cell=6 kba=8"
+    motif['cmd'] = "FFT3D nx=2048 ny=2048 nz=2048 npRow=8 nsPerElement=0.0016"
+
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
@@ -25,7 +26,7 @@ def getNetwork():
 	#platform = 'chamaPSM'
 	#platform = 'chamaOpenIB'
 	#platform = 'bgq'
-	platform = 'default'
+	platform = 'FFT3D'
 
 	#topo = ''
 	#shape = ''

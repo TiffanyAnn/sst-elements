@@ -25,7 +25,7 @@ def getNetwork():
 	#platform = 'chamaPSM'
 	#platform = 'chamaOpenIB'
 	#platform = 'bgq'
-	platform = 'default'
+	platform = 'LQCD'
 
 	#topo = ''
 	#shape = ''

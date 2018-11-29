@@ -56,17 +56,17 @@ int minPackets = 0;
 int valPackets = 0;
 int packets = 0;*/
 
-// need to put info into single variable: grp | rtr | port
-unsigned int downLink0 = (1111 << 16) | (1110 << 8) | 117;
-unsigned int downLink1 = (1111 << 16) | (1119 << 8) | 116;
-unsigned int downLink2 = (1111 << 16) | (1110 << 8) | 113;
-unsigned int downLink3 = (1112 << 16) | (1110 << 8) | 114;
+/*// need to put info into single variable: grp | rtr | port
+uint64_t downLink0 = (111100 << 16) | (1110 << 8) | 117;
+uint64_t downLink1 = (111100 << 16) | (1119 << 8) | 116;
+uint64_t downLink2 = (111100 << 16) | (1110 << 8) | 113;
+uint64_t downLink3 = (111200 << 16) | (1110 << 8) | 114;
 
 //insert the failed links into the set
-std::unordered_set<unsigned int>downPorts= { downLink0, downLink1,
-								 	  downLink2, downLink3 };
+std::unordered_set<uint64_t>downPorts= { downLink0, downLink1,
+								 	  downLink2, downLink3 };*/
 
-std::unordered_multimap<unsigned int,unsigned int>umap;
+std::unordered_multimap<uint64_t,uint64_t>umap; //storing routes
 std::unordered_set<unsigned int>downRoutes; //routes that are down
 
 // Check routing decisions against the downRoute set
@@ -119,8 +119,6 @@ topo_dragonfly::topo_dragonfly(Component* comp, Params &p) :
     params.h = (uint32_t)p.find<int>("dragonfly:intergroup_per_router");
     params.g = (uint32_t)p.find<int>("dragonfly:num_groups");
     params.n = (uint32_t)p.find<int>("dragonfly:intergroup_links");
-	 ROUTE=p.find<int>("dragonfly:route");
-	 RUNTYPE=p.find<int>("dragonfly:run");
 
     std::string global_route_mode_s = p.find<std::string>("dragonfly:global_route_mode","absolute");
     if ( global_route_mode_s == "absolute" ) global_route_mode = ABSOLUTE;
@@ -310,13 +308,13 @@ topo_dragonfly::route(int port, int vc, internal_router_event* ev)
         output.verbose(CALL_INFO, 1, 1, "%u:%u, Recv: %d/%d  Setting Next Port/VC:  %u/%u\n", group_id, router_id, port, vc, next_port, td_ev->getVC());
         td_ev->setNextPort(next_port);
 
-	 if (RUNTYPE == 0){
-    //#if RUNTYPE == 0
-    		unsigned int src_to_dest = (ROUTE << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		unsigned int link = (group_id << 16) | (router_id << 8) | port;
+	 //if (RUNTYPE == 0){
+    #if RUNTYPE == 0
+    		uint64_t src_to_dest = (ROUTE << 16) | (ev->getSrc() << 8) | ev->getDest();
+    		uint64_t link = (group_id << 16) | (router_id << 8) | port;
     		umap.insert(std::make_pair(src_to_dest,link));
-//    #endif
-}
+    #endif
+//}
     output.verbose(CALL_INFO, 1, 1, "%u:%u, Recv: %d/%d  Setting Next Port/VC:  %u/%u\n", group_id, router_id, port, vc, next_port, td_ev->getVC());
     td_ev->setNextPort(next_port);
 }

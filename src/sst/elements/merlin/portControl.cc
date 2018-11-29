@@ -28,9 +28,7 @@
 
 //#define RUNTYPE 0 //0: create routing table
 				  //1: read routing table from file
-//#define FILENAME "TEST_16384_rt.txt" //filename for the routing table
-//int RUNTYPE;
-//std::string FILENAME;
+
 bool hasPrinted = false; //to print the routing table only once
 bool fileRead = false;
 
@@ -38,15 +36,35 @@ int directRoute = 0;
 int valiantRoute = 0;
 int totalPackets = 0;
 
-const int RTRS_PER_GRP = 32;
+static std::unordered_multimap<unsigned int,unsigned int>portPairs;
+static std::unordered_set<unsigned int>localPorts;
+static std::unordered_set<unsigned int>remotePorts;
+
+static std::string filename; //routing table filename
+static int RTRS_PER_GRP;
 
 using namespace SST;
 using namespace Merlin;
 using namespace Interfaces;
 
+void writePortPairs(){
+	FILE * portFile;
+	std::string fname = "ports.txt";
+   portFile = fopen (fname.c_str(),"a");
+   for (unsigned i=0; i< portPairs.bucket_count(); ++i) {
+        for(auto itr = portPairs.begin(i);itr !=portPairs.end(i); ++itr){
+        	unsigned int local = itr->first;
+         unsigned int remote = itr->second;
+         fprintf(portFile, "%d %d\n", local, remote);
+    }
+ }
+    fclose (portFile);
+std::cout << "port pairs written to file\n";
+}
+
 void writeRoutes(){
 	FILE * routeFile;
-    routeFile = fopen (FILENAME.c_str(),"a");
+    routeFile = fopen (filename.c_str(),"a");
     for (unsigned i=0; i< umap.bucket_count(); ++i) {
     	bool printed = false;
         for(auto itr = umap.begin(i);itr !=umap.end(i); ++itr){
@@ -291,10 +309,9 @@ PortControl::PortControl(Params &p, Router* rif, int rtr_id, std::string link_po
         ni->initialize(port_name);
         network_inspectors.push_back(ni);
     }
-
-	 //get Params
-	 //FILENAME = p.find<std::string>("rt_filename", "");
-	 //RUNTYPE=p.find<int>("dragonfly:run");
+	 RTRS_PER_GRP = p.find<int>("dragonfly:routers_per_group");
+	 //RT_FILENAME = p.find<std::string>("rt_filename", "");
+	 filename = RT_FILENAME;
 }
 
 
@@ -410,7 +427,6 @@ PortControl::setup() {
 
 void
 PortControl::finish() {
-
     // Any links that ended in an idle state need to add stats
     if (is_idle && connected) {
         idle_time->addData(Simulation::getSimulation()->getCurrentSimCycle() - idle_start);
@@ -440,6 +456,7 @@ PortControl::finish() {
 	 	//print route info to file
 	 	if(hasPrinted == false){
 	 		writeRoutes();
+			writePortPairs();
 	 		hasPrinted = true;
 	 	}
 	 #endif
@@ -541,14 +558,26 @@ PortControl::init(unsigned int phase) {
             remote_port_number = init_ev->int_value;
             delete init_ev;
 
-				unsigned int local, remote;
-			/*	std::cout << "local:\n" << rtr_id/RTRS_PER_GRP << "\n" << rtr_id%RTRS_PER_GRP << "\n" << port_number << "\n";*/
-				local = ((rtr_id/RTRS_PER_GRP) << 16) | ((rtr_id%RTRS_PER_GRP) << 8) | (port_number);
-				remote = ((remote_rtr_id/RTRS_PER_GRP) << 16) | ((remote_rtr_id%RTRS_PER_GRP) << 8) | (remote_port_number);
+				// save local and remote port pairs
+				uint64_t local, remote;
+				uint64_t local_group, local_rtr, remote_group, remote_rtr;
 
-				std::cout << local << "\n" << remote << "\n";
+				// map from numbering scheme used in portControl
+				// to numbering scheme used in the topology files
+				local_group = uint64_t(rtr_id/RTRS_PER_GRP);
+				local_rtr = uint64_t(rtr_id%RTRS_PER_GRP);
+				remote_group = uint64_t(remote_rtr_id/RTRS_PER_GRP);
+				remote_rtr = uint64_t(remote_rtr_id%RTRS_PER_GRP);
 
-			/*	std::cout << "remote:\n" << remote_rtr_id/RTRS_PER_GRP << "\n" << remote_rtr_id%RTRS_PER_GRP << "\n" << remote_port_number << "\n";*/
+				// pack the 3 variables into a single variable before adding to umap
+				local = (local_group << 16) | (local_rtr << 8) | (port_number);
+				remote = (remote_group << 16) | (remote_rtr << 8) | (remote_port_number);
+
+				if((localPorts.find(remote) == localPorts.end()) && remotePorts.find(local) == remotePorts.end()){
+					localPorts.insert(local);
+					remotePorts.insert(remote);
+					portPairs.insert(std::make_pair(local,remote));
+				}
         }
         }
         break;

@@ -150,6 +150,10 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
                              "endpoint requests.\n");
     }
 
+    ROUTE=params.find<int>("dragonfly:route");
+    RUNTYPE=params.find<int>("dragonfly:runtype");
+    RT_FILENAME=params.find<std::string>("rt_filename");
+    
     // Get the topology
     std::string topology = params.find<std::string>("topology");
 

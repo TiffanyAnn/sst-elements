@@ -25,7 +25,7 @@ def getNetwork():
 	#platform = 'chamaPSM'
 	#platform = 'chamaOpenIB'
 	#platform = 'bgq'
-	platform = 'default'
+	platform = 'allReduce_small'
 
 	#topo = ''
 	#shape = ''

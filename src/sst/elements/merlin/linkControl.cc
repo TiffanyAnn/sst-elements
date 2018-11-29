@@ -26,8 +26,10 @@
 
 //#define RUNTYPE 0 //0: create routing table
 				  //1: read routing table from file
-//#define FILENAME "TEST_16384_rt.txt" //filename for the routing table
-std::string FILENAME;
+
+std::string RT_FILENAME; //routing table filename
+std::string DOWNPORT_FNAME; //file containing list of down ports
+std::unordered_set<unsigned int>downPorts;
 static bool hasPrinted = false; //to print the routing table only once
 static bool fileRead = false;
 
@@ -36,13 +38,16 @@ using namespace Interfaces;
 
 namespace Merlin {
 
+// reads the routing table from a text file
+// checks ports in each route against the list of disabled ports (downPorts)
+// if a route contains a disabled port, it will be marked as down
 void readRoutes(){
     unsigned int routeKey;
     unsigned int portInRoute;
     std::string routeID;
     std::string line;
     bool found;
-	std::ifstream routeFile(FILENAME);
+	 std::ifstream routeFile(RT_FILENAME);
 
     while(std::getline(routeFile, line))
     {
@@ -60,39 +65,18 @@ void readRoutes(){
            }
        }
     }
-
     fileRead = true;
-std::cout << "route read from file\n";
-
 }
 
+// read the ports that are marked as disabled from a text file
+// insert into an unordered_set referenced by the downRoutes function
 void readDownPorts(){
-	std::ifstream  fin("ports.txt");
+	std::ifstream  fin(DOWNPORT_FNAME.c_str());
    unsigned int port;
 	while (fin >> port){
       downPorts.insert(port);
    }
 }
-
-/*void writeRoutes(){
-	FILE * routeFile;
-    routeFile = fopen (FILENAME.c_str(),"a");
-    for (unsigned i=0; i< umap.bucket_count(); ++i) {
-    	bool printed = false;
-        for(auto itr = umap.begin(i);itr !=umap.end(i); ++itr){
-        	unsigned int src_dest = itr->first;
-            unsigned int theLink = itr->second;
-            if(printed == false){
-            	fprintf(routeFile, "\n%d:%d", src_dest, theLink);
-                printed = true;
-            }
-            else
-            	fprintf(routeFile, ",%d", theLink);
-        }
-    }
-    fclose (routeFile);
-std::cout << "route written to file\n";
-}*/
 
 LinkControl::LinkControl(Component* parent, Params &params) :
     SST::Interfaces::SimpleNetwork(parent),
@@ -118,7 +102,8 @@ LinkControl::LinkControl(Component* parent, Params &params) :
     else {
         merlin_abort.fatal(CALL_INFO,-1,"Unknown checkerboard_alg requested: %s\n",checkerboard_alg.c_str());
     }
-    FILENAME = params.find<std::string>("rt_filename", "");
+    RT_FILENAME = params.find<std::string>("rt_filename", "");
+    DOWNPORT_FNAME = params.find<std::string>("downPort_filename", "");
 }
 
 bool
@@ -359,26 +344,6 @@ void LinkControl::finish(void)
             output_buf[i].pop();
         }
     }
-
-/*#if RUNTYPE == 0
-	//print route info to file
-	if(hasPrinted == false){
-		writeRoutes();
-		hasPrinted = true;
-	}
-#endif*/
-
-/*#if RUNTYPE == 1
-	if(hasPrinted == false){
-		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
-		std::cout << "number of packets routed minimally: " << dirPacketCount << "\n";
-		std::cout << "number of packets adaptively routed: " << valPacketCount << "\n";
-		std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
-		std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
-		std::cout << "total packets: " << allPackets << "\n";
-		hasPrinted = true;
-	}
-#endif*/
 }
 
 

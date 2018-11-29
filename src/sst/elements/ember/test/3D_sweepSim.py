@@ -22,13 +22,8 @@ def getWorkFlow( defaults ):
 
 def getNetwork():
 
-	#platform = 'chamaPSM'
-	#platform = 'chamaOpenIB'
-	#platform = 'bgq'
-	platform = 'default'
+	platform = '3D_sweep'
 
-	#topo = ''
-	#shape = ''
 	topo = 'dragonfly'
 	shape = '16:32:16:32'
 

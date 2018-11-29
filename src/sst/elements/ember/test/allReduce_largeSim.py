@@ -7,7 +7,7 @@ def getWorkFlow( defaults ):
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
-    motif['cmd'] = "Sweep3D pex=128 pey=128 nx=256 ny=256 nz=256 nodeflops=75000000000000 fields_per_cell=6 kba=8"
+    motif['cmd'] = "Allreduce iterations=1 count=131072"
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
@@ -25,7 +25,7 @@ def getNetwork():
 	#platform = 'chamaPSM'
 	#platform = 'chamaOpenIB'
 	#platform = 'bgq'
-	platform = 'default'
+	platform = 'allReduce_large'
 
 	#topo = ''
 	#shape = ''

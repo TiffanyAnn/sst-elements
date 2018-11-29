@@ -15,7 +15,7 @@ class TorusInfo(TopoInfo):
 		self.params["num_dims"] = self.calcNumDim(shape)
 		self.params["torus:shape"] = shape
 		self.params["torus:width"] = self.calcWidth(shape,width)
-		self.params["torus:local_ports"] = local_ports 
+		self.params["torus:local_ports"] = local_ports
 		self.numNodes = self.calcNumNodes( shape ) * local_ports
 
 	def getNetworkParams(self):
@@ -36,7 +36,7 @@ class TorusInfo(TopoInfo):
 
 	def calcWidth(self,shape,width):
 		tmp = len( shape.split( 'x' ) ) - 1
-		retval = str(width) 
+		retval = str(width)
 		count = 0
 		while ( count < tmp ):
 			retval += "x" + str(width)
@@ -86,12 +86,12 @@ class FattreeInfo(TopoInfo):
 		self.params = {}
 		self.numNodes = self.calcNumNodes(shape)
 		self.params["fattree:shape"] = shape
-                
+
 	def getNetworkParams(self):
 		return self.params
 
 	def getNumNodes(self):
-		return self.numNodes 
+		return self.numNodes
 
         def calcNumNodes(self, shape):
                 levels = shape.split(":")
@@ -110,7 +110,7 @@ class DragonFlyLegacyInfo(TopoInfo):
 		hostsPerGroup = int(nRtrs) * int(lcl)
 		nGrp = int(nRtrs) * int(glbl) + 1
 		self.params["router_radix"] = radix
-		self.params["dragonfly:shape"] = "" 
+		self.params["dragonfly:shape"] = ""
 		self.params["dragonfly:hosts_per_router"] = lcl
 		self.params["dragonfly:routers_per_group"] = nRtrs
 		self.params["dragonfly:intergroup_per_router"] = glbl
@@ -119,30 +119,33 @@ class DragonFlyLegacyInfo(TopoInfo):
 		sst.params["dragonfly:adaptive_threshold"] = "2.0"
 
 		self.numNodes = nGrp * hostsPerGroup
-                
+
 	def getNetworkParams(self):
 		return self.params
 
 	def getNumNodes(self):
-		return self.numNodes 
+		return self.numNodes
 
 class DragonFlyInfo(TopoInfo):
 	def __init__( self, shape ):
 		lcl, nRtrs, glbl, nGrp = shape.split(':')
 		self.params = {}
 		hostsPerGroup = int(nRtrs) * int(lcl)
-		self.params["dragonfly:shape"] = "" 
+		self.params["dragonfly:shape"] = ""
 		self.params["dragonfly:hosts_per_router"] = lcl
 		self.params["dragonfly:routers_per_group"] = nRtrs
 		self.params["dragonfly:intergroup_links"] = glbl
 		self.params["dragonfly:num_groups"] =  nGrp
-		self.params["dragonfly:algorithm"] =  "minimal" 
+		self.params["dragonfly:algorithm"] =  "minimal"
+		#self.params["route"] = "0"
+		#self.params["runtype"] = "0"
+		#self.params["rt_filename"] = "Test.txt"
 		#sst.params["dragonfly:algorithm"] = "adaptive-local"
 		#sst.params["dragonfly:adaptive_threshold"] = "2.0"
 		self.numNodes = int(nGrp) * hostsPerGroup
-                
+
 	def getNetworkParams(self):
 		return self.params
 
 	def getNumNodes(self):
-		return self.numNodes 
+		return self.numNodes

@@ -8,10 +8,10 @@ from sst.merlin import *
 import loadInfo
 from loadInfo import *
 
-import networkConfig 
+import networkConfig
 from networkConfig import *
 
-import random 
+import random
 
 debug    = 0
 emberVerbose = 0
@@ -22,7 +22,7 @@ useSimpleMemoryModel=False
 
 statNodeList = []
 jobid = 0
-loadFile = '' 
+loadFile = ''
 workList = []
 workFlow = []
 numCores = 1
@@ -30,9 +30,9 @@ numNodes = 0
 
 platform = 'default'
 
-netFlitSize = '' 
-netBW = '' 
-netPktSize = '' 
+netFlitSize = ''
+netBW = ''
+netPktSize = ''
 netTopo = ''
 netShape = ''
 netHostsPerRtr = 1
@@ -47,26 +47,26 @@ bgStddev = 300
 bgMsgSize = 1000
 
 detailedModelName = ""
-detailedModelNodes = [] 
+detailedModelNodes = []
 detailedModelParams = ""
 simConfig = ""
 platParams = ""
 
-params = { 
+params = {
 'network': [],
 'nic': [],
 'ember': [],
 'hermes': [],
 'merlin': [],
-} 
+}
 
 motifAPI='HadesMP'
 
-motifDefaults = { 
+motifDefaults = {
 	'cmd' : "",
-	'printStats' : 0, 
+	'printStats' : 0,
 	'spyplotmode': 0,
-	'api': motifAPI, 
+	'api': motifAPI,
 }
 
 
@@ -78,7 +78,7 @@ try:
 		"rtrArb=","embermotifLog=",	"rankmapper=","motifAPI=",
 		"bgPercentage=","bgMean=","bgStddev=","bgMsgSize=","netInspect=",
         "detailedNameModel=","detailedModelParams=","detailedModelNodes=",
-		"useSimpleMemoryModel","param="])
+		"useSimpleMemoryModel=","param="])
 
 except getopt.GetoptError as err:
     print str(err)
@@ -103,8 +103,8 @@ for o, a in opts:
 		motifAPI= a
     elif o in ("--cmdLine"):
     	motif = dict.copy(motifDefaults)
-    	motif['cmd'] = a 
-    	motif['api'] = motifAPI 
+    	motif['cmd'] = a
+    	motif['api'] = motifAPI
     	workFlow.append( motif )
     elif o in ("--topo"):
         netTopo = a
@@ -132,11 +132,11 @@ for o, a in opts:
     elif o in ("--bgPercentage"):
         bgPercentage = int(a)
     elif o in ("--bgMean"):
-        bgMean = int(a) 
+        bgMean = int(a)
     elif o in ("--bgStddev"):
-        bgStddev = int(a) 
+        bgStddev = int(a)
     elif o in ("--bgMsgSize"):
-        bgMsgSize = int(a) 
+        bgMsgSize = int(a)
     elif o in ("--detailedModelName"):
         detailedModelName = a
     elif o in ("--detailedModelNodes"):
@@ -149,11 +149,11 @@ for o, a in opts:
         platParams = a
     elif o in ("--param"):
         key,value = a.split(":",1)
-        params[key] += [value]  
+        params[key] += [value]
     elif o in ("--useSimpleMemoryModel"):
 		useSimpleMemoryModel=True
     else:
-        assert False, "unhandle option" 
+        assert False, "unhandle option"
 
 if 1 == len(sys.argv):
 	simConfig = 'defaultSim'
@@ -200,8 +200,9 @@ except:
 
 nicParams = config.nicParams
 networkParams = config.networkParams
+merlinParams = config.merlinParams
 hermesParams = config.hermesParams
-emberParams = config.emberParams 
+emberParams = config.emberParams
 platNetConfig = config.netConfig
 
 if netBW:
@@ -239,15 +240,15 @@ elif "fattree" == netTopo:
 	topo = topoFatTree()
 
 elif "dragonfly" == netTopo:
-		
+
 	topoInfo = DragonFlyInfo(netShape)
 	topo = topoDragonFly()
 
 elif "dragonfly2" == netTopo:
-	
+
 	topoInfo = DragonFlyInfo(netShape)
 	topo = topoDragonFly()
-	
+
 elif "dragonflyLegacy" == netTopo:
 
 	topoInfo = DragonFlyLegacyInfo(netShape)
@@ -271,7 +272,7 @@ if int(numNodes) == 0:
 
 if int(numNodes) > int(topoInfo.getNumNodes()):
     sys.exit("need more nodes want " + str(numNodes) + ", have " + str(topoInfo.getNumNodes()))
- 
+
 print "EMBER: numNodes={0} numNics={1}".format(numNodes, topoInfo.getNumNodes() )
 
 emptyNids = []
@@ -288,16 +289,16 @@ if jobid > 0 and rndmPlacement:
 	#nids.sort()
 
 	allNids = []
-	for num in range ( 0, int( topoInfo.getNumNodes()) ): 
-		allNids.append( num ) 
+	for num in range ( 0, int( topoInfo.getNumNodes()) ):
+		allNids.append( num )
 
 	emptyNids = list( set(allNids).difference( set(nids) ) )
 
 	while nids:
-		nidList += str(nids.pop(0)) 
+		nidList += str(nids.pop(0))
 		if nids:
 			nidList +=","
-    
+
 	tmp = workList[0]
 	tmp = tmp[1]
 
@@ -311,9 +312,9 @@ XXX = []
 if rndmPlacement and bgPercentage > 0:
     if bgPercentage > 100:
         sys.exit( "fatal: bgPercentage " + str(bgPercentage) );
-    count = 0 
+    count = 0
     bgPercentage = float(bgPercentage) / 100.0
-    avail = int( topoInfo.getNumNodes() * bgPercentage ) 
+    avail = int( topoInfo.getNumNodes() * bgPercentage )
     bgMotifs, r = divmod( avail - int(numNodes), 2 )
 
     print "EMBER: netAlloced {0}%, bg motifs {1}, mean {2} ns, stddev {3} ns, msgsize {4} bytes".\
@@ -347,10 +348,10 @@ hermesParams['hermesParams.verboseLevel'] = debug
 hermesParams['hermesParams.nicParams.verboseLevel'] = debug
 hermesParams['hermesParams.functionSM.verboseLevel'] = debug
 hermesParams['hermesParams.ctrlMsg.verboseLevel'] = debug
-hermesParams['hermesParams.ctrlMsg.pqs.verboseLevel'] = debug 
+hermesParams['hermesParams.ctrlMsg.pqs.verboseLevel'] = debug
 hermesParams['hermesParams.ctrlMsg.pqs.verboseMask'] = 1
 emberParams['verbose'] = emberVerbose
-hermesParams['hermesParams.numNodes'] = topoInfo.getNumNodes() 
+hermesParams['hermesParams.numNodes'] = topoInfo.getNumNodes()
 
 if embermotifLog:
     emberParams['motifLog'] = embermotifLog
@@ -392,7 +393,7 @@ for a in params['hermes']:
 for a in params['merlin']:
     key, value = a.split("=")
     if key in sst.merlin._params:
-        print "override hermesParams {}={} with {}".format( key, sst.merlin._params[key], value )
+        print "override merlinParams {}={} with {}".format( key, sst.merlin._params[key], value )
     else:
         print "set merlin {}={}".format( key, value )
     sst.merlin._params[key] = value
@@ -401,19 +402,22 @@ for a in params['merlin']:
 nicParams["packetSize"] =	networkParams['packetSize']
 nicParams["link_bw"] = networkParams['link_bw']
 sst.merlin._params["link_lat"] = networkParams['link_lat']
-sst.merlin._params["link_bw"] = networkParams['link_bw']   
-sst.merlin._params["xbar_bw"] = networkParams['link_bw'] 
-sst.merlin._params["flit_size"] = networkParams['flitSize'] 
-sst.merlin._params["input_latency"] = networkParams['input_latency'] 
-sst.merlin._params["output_latency"] = networkParams['output_latency'] 
-sst.merlin._params["input_buf_size"] = networkParams['input_buf_size'] 
-sst.merlin._params["output_buf_size"] = networkParams['output_buf_size'] 
+sst.merlin._params["link_bw"] = networkParams['link_bw']
+sst.merlin._params["xbar_bw"] = networkParams['link_bw']
+sst.merlin._params["flit_size"] = networkParams['flitSize']
+sst.merlin._params["input_latency"] = networkParams['input_latency']
+sst.merlin._params["output_latency"] = networkParams['output_latency']
+sst.merlin._params["input_buf_size"] = networkParams['input_buf_size']
+sst.merlin._params["output_buf_size"] = networkParams['output_buf_size']
+sst.merlin._params["rt_filename"] = merlinParams['merlinParams.rt_filename']
+sst.merlin._params["dragonfly:route"] = merlinParams['merlinParams.route']
+sst.merlin._params["dragonfly:runtype"] = merlinParams['merlinParams.runtype']
 
 if "network_inspectors" in networkParams.keys():
     sst.merlin._params["network_inspectors"] = networkParams['network_inspectors']
 
 if rtrArb:
-	sst.merlin._params["xbar_arb"] = "merlin." + rtrArb 
+	sst.merlin._params["xbar_arb"] = "merlin." + rtrArb
 
 
 print "EMBER: network: BW={0} pktSize={1} flitSize={2}".format(
@@ -422,7 +426,9 @@ print "EMBER: network: BW={0} pktSize={1} flitSize={2}".format(
 if len(params['merlin']) == 0:
     sst.merlin._params.update( topoInfo.getNetworkParams() )
 
-epParams = {} 
+print "EMBER: merlin: ROUTE={0} RUNTYPE={1} RT_FNAME={2}".format(sst.merlin._params["dragonfly:route"], sst.merlin._params["dragonfly:runtype"], sst.merlin._params["rt_filename"])
+
+epParams = {}
 epParams.update(emberParams)
 epParams.update(hermesParams)
 

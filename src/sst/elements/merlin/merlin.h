@@ -34,12 +34,21 @@ extern int dirPacketCount;
 extern int valPacketCount;
 extern int allPackets;
 
-extern int RUNTYPE;
-extern std::string FILENAME;
+extern int RUNTYPE; //0: create routing table
+				        //1: read routing table from file
+                    //2: normal run
+
+extern int ROUTE;  /* 0 is 1st direct route,
+				          1 is 2nd direct route,
+				          2 is 1st valiant route,
+				          3 is 2nd valiant route,
+				          set to any other number to disable */
+extern std::string RT_FILENAME;
 
 extern std::unordered_multimap<unsigned int,unsigned int>umap; //the routing table
 extern std::unordered_set<unsigned int>downRoutes; //routes unavailable due to link failures
-extern std::unordered_set<unsigned int>downPorts;
+extern std::unordered_set<unsigned int>downPorts; //ports marked as disabled
+
 using namespace SST;
 
 namespace SST {
