@@ -409,7 +409,10 @@ sst.merlin._params["input_latency"] = networkParams['input_latency']
 sst.merlin._params["output_latency"] = networkParams['output_latency']
 sst.merlin._params["input_buf_size"] = networkParams['input_buf_size']
 sst.merlin._params["output_buf_size"] = networkParams['output_buf_size']
+
 sst.merlin._params["rt_filename"] = merlinParams['merlinParams.rt_filename']
+sst.merlin._params["downPort_filename"] = merlinParams['merlinParams.downPort_filename']
+
 sst.merlin._params["dragonfly:route"] = merlinParams['merlinParams.route']
 sst.merlin._params["dragonfly:runtype"] = merlinParams['merlinParams.runtype']
 
@@ -423,10 +426,12 @@ if rtrArb:
 print "EMBER: network: BW={0} pktSize={1} flitSize={2}".format(
         networkParams['link_bw'], networkParams['packetSize'], networkParams['flitSize'])
 
-if len(params['merlin']) <= 1:
+if len(params['merlin']) <= 4:
     sst.merlin._params.update( topoInfo.getNetworkParams() )
 
-print "EMBER: merlin: ROUTE={0} RUNTYPE={1} RT_FNAME={2}".format(sst.merlin._params["dragonfly:route"], sst.merlin._params["dragonfly:runtype"], sst.merlin._params["rt_filename"])
+print "EMBER: merlin: ROUTE={0} RUNTYPE={1} ROUTING_ALGO={2} PORTS_FNAME={3}".format(sst.merlin._params["dragonfly:route"], sst.merlin._params["dragonfly:runtype"], 
+sst.merlin._params["dragonfly:algorithm"],
+sst.merlin._params["downPort_filename"])
 
 epParams = {}
 epParams.update(emberParams)

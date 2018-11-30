@@ -129,7 +129,8 @@ topo_dragonfly::topo_dragonfly(Component* comp, Params &p) :
 
 //    std::string route_algo = "adaptive-local";//p.find<std::string>("dragonfly:algorithm", "minimal");
  	std::string route_algo = p.find<std::string>("dragonfly:algorithm", "minimal");
-    adaptive_threshold = 2.0; //p.find<double>("dragonfly:adaptive_threshold",2.0);
+    adaptive_threshold =
+	 p.find<double>("dragonfly:adaptive_threshold",2.0);
 
     // Get the global link map
     std::vector<int64_t> global_link_map;
