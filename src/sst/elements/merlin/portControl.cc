@@ -48,6 +48,7 @@ using namespace Merlin;
 using namespace Interfaces;
 
 void writePortPairs(){
+	std::cout << ROUTE << "\n";
 	FILE * portFile;
 	std::string fname = "ports.txt";
    portFile = fopen (fname.c_str(),"a");
@@ -68,14 +69,14 @@ void writeRoutes(){
     for (unsigned i=0; i< umap.bucket_count(); ++i) {
     	bool printed = false;
         for(auto itr = umap.begin(i);itr !=umap.end(i); ++itr){
-        	unsigned int src_dest = itr->first;
-            unsigned int theLink = itr->second;
+        	uint64_t src_dest = itr->first;
+            uint64_t theLink = itr->second;
             if(printed == false){
-            	fprintf(routeFile, "\n%d:%d", src_dest, theLink);
+            	fprintf(routeFile, "\n%llu:%llu", src_dest, theLink);
                 printed = true;
             }
             else
-            	fprintf(routeFile, ",%d", theLink);
+            	fprintf(routeFile, ",%llu", theLink);
         }
     }
     fclose (routeFile);
@@ -312,6 +313,7 @@ PortControl::PortControl(Params &p, Router* rif, int rtr_id, std::string link_po
 	 RTRS_PER_GRP = p.find<int>("dragonfly:routers_per_group");
 	 //RT_FILENAME = p.find<std::string>("rt_filename", "");
 	 filename = RT_FILENAME;
+
 }
 
 
@@ -452,16 +454,16 @@ PortControl::finish() {
         network_inspectors[i]->finish();
     }
 
-	 #if RUNTYPE == 0
+	 if (RUNTYPE == 0){
 	 	//print route info to file
 	 	if(hasPrinted == false){
 	 		writeRoutes();
 			writePortPairs();
 	 		hasPrinted = true;
 	 	}
-	 #endif
+	}
 
-	 #if RUNTYPE == 1
+	 if (RUNTYPE == 1){
 	 	if(hasPrinted == false){
 	 		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
 	 		std::cout << "number of packets routed minimally: " << directRoute << "\n";
@@ -471,7 +473,7 @@ PortControl::finish() {
 	 		std::cout << "total packets: " << totalPackets << "\n";
 	 		hasPrinted = true;
 	 	}
-	 #endif
+	}
 }
 
 
@@ -562,6 +564,7 @@ PortControl::init(unsigned int phase) {
 				uint64_t local, remote;
 				uint64_t local_group, local_rtr, remote_group, remote_rtr;
 
+				if ((topo->getPortLogicalGroup(port_number) == "global") && (topo->getPortLogicalGroup(remote_port_number) == "global")){
 				// map from numbering scheme used in portControl
 				// to numbering scheme used in the topology files
 				local_group = uint64_t(rtr_id/RTRS_PER_GRP);
@@ -579,6 +582,7 @@ PortControl::init(unsigned int phase) {
 					portPairs.insert(std::make_pair(local,remote));
 				}
         }
+	     }
         }
         break;
     // case 2:

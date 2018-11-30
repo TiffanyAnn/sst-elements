@@ -150,9 +150,10 @@ hr_router::hr_router(ComponentId_t cid, Params& params) :
                              "endpoint requests.\n");
     }
 
-    ROUTE=params.find<int>("route",-1);
-    RUNTYPE=params.find<int>("runtype",-1);
+    ROUTE=params.find<int>("route");
+    RUNTYPE=params.find<int>("runtype");
     RT_FILENAME=params.find<std::string>("rt_filename");
+    DOWNPORT_FNAME=params.find<std::string>("downPort_filename");
 
     // Get the topology
     std::string topology = params.find<std::string>("topology");

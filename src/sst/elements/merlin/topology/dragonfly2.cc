@@ -73,12 +73,12 @@ std::unordered_set<unsigned int>downRoutes;
 // increment downLink encountered counter each time a route is avoided
 
 bool isRouteDown2(unsigned int route){
-	std::unordered_set<unsigned int>::const_iterator i = downRoutes.find (route);
-	if( i == downRoutes.end()) //route exists in the set
-		return false;
-	else {
+//	std::unordered_set<unsigned int>::const_iterator i = downRoutes.find (route);
+//	if( i == downRoutes.end()) //route exists in the set
+//		return false;
+//	else {
 		return true;
-	}
+//	}
 }
 
 bool isPortDown(uint32_t src_group_id, uint32_t group_id, uint32_t router_id, int port);

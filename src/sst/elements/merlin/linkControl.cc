@@ -27,7 +27,10 @@
 
 std::string RT_FILENAME; //routing table filename
 std::string DOWNPORT_FNAME; //file containing list of down ports
-std::unordered_set<unsigned int>downPorts;
+static std::string rt_filename;
+static std::string downPort_filename;
+
+std::unordered_set<uint64_t>downPorts;
 static bool hasPrinted = false; //to print the routing table only once
 static bool fileRead = false;
 
@@ -40,6 +43,7 @@ namespace Merlin {
 // checks ports in each route against the list of disabled ports (downPorts)
 // if a route contains a disabled port, it will be marked as down
 void readRoutes(){
+   std::cout << "rt_filename: " << rt_filename << "\n";
     unsigned int routeKey;
     unsigned int portInRoute;
     std::string routeID;
@@ -55,25 +59,27 @@ void readRoutes(){
         routeKey = std::stoul (routeID);
         while(std::getline(temp, line, ',') && found == false){
            portInRoute = std::stoul(line);
-           auto search = downPorts.find(portInRoute); //check port against down links
+           auto search = downPorts.find((uint64_t)portInRoute); //check port against down links
            if(search != downPorts.end()) //port is down
            {
-           		downRoutes.insert(routeKey);
+           		downRoutes.insert((uint64_t)routeKey);
              	found = true;
            }
        }
     }
     fileRead = true;
+    std::cout << "downRoutes: " << downRoutes.size() << "\n";
 }
 
 // read the ports that are marked as disabled from a text file
 // insert into an unordered_set referenced by the downRoutes function
 void readDownPorts(){
-	std::ifstream  fin(DOWNPORT_FNAME.c_str());
-   unsigned int port;
+	std::ifstream  fin(DOWNPORT_FNAME);
+   uint64_t port;
 	while (fin >> port){
       downPorts.insert(port);
    }
+   std::cout << downPorts.size() << "\n";
 }
 
 LinkControl::LinkControl(Component* parent, Params &params) :
@@ -100,8 +106,11 @@ LinkControl::LinkControl(Component* parent, Params &params) :
     else {
         merlin_abort.fatal(CALL_INFO,-1,"Unknown checkerboard_alg requested: %s\n",checkerboard_alg.c_str());
     }
-    RT_FILENAME = params.find<std::string>("rt_filename", "");
-    DOWNPORT_FNAME = params.find<std::string>("downPort_filename", "");
+    //RT_FILENAME = params.find<std::string>("rt_filename");
+    rt_filename = RT_FILENAME;
+    //DOWNPORT_FNAME = params.find<std::string>("downPort_filename");
+    downPort_filename = DOWNPORT_FNAME;
+    //std::cout << "RT " << RT_FILENAME.c_str() << "\n";
 }
 
 bool
@@ -160,12 +169,12 @@ LinkControl::initialize(const std::string& port_name, const UnitAlgebra& link_bw
     idle_time = registerStatistic<uint64_t>("idle_time");
 
 	// Read in routing information and check for downLinks
-#if RUNTYPE == 1
+if (RUNTYPE == 1){
 	if(fileRead == false){
       readDownPorts();
 		readRoutes();
    }
-#endif
+}
     return true;
 }
 
