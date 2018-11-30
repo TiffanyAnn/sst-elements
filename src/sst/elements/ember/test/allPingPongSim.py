@@ -7,7 +7,7 @@ def getWorkFlow( defaults ):
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
-    motif['cmd'] = "AllPingPong iterations=10 messageSize=1024"
+    motif['cmd'] = "AllPingPong iterations=100 messageSize=1024"
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
