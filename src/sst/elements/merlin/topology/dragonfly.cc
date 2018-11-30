@@ -308,13 +308,12 @@ topo_dragonfly::route(int port, int vc, internal_router_event* ev)
         output.verbose(CALL_INFO, 1, 1, "%u:%u, Recv: %d/%d  Setting Next Port/VC:  %u/%u\n", group_id, router_id, port, vc, next_port, td_ev->getVC());
         td_ev->setNextPort(next_port);
 
-	 //if (RUNTYPE == 0){
     #if RUNTYPE == 0
-    		uint64_t src_to_dest = (ROUTE << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		uint64_t link = (group_id << 16) | (router_id << 8) | port;
+    		uint64_t src_to_dest = ((uint64_t)ROUTE << 16) | ((uint64_t)ev->getSrc() << 8) | ev->getDest();
+    		uint64_t link = ((uint64_t)group_id << 16) | ((uint64_t)router_id << 8) | port;
     		umap.insert(std::make_pair(src_to_dest,link));
     #endif
-//}
+
     output.verbose(CALL_INFO, 1, 1, "%u:%u, Recv: %d/%d  Setting Next Port/VC:  %u/%u\n", group_id, router_id, port, vc, next_port, td_ev->getVC());
     td_ev->setNextPort(next_port);
 }
