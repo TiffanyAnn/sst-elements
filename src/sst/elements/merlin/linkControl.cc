@@ -24,8 +24,6 @@
 #include <sstream>
 #include "merlin.h"
 
-//#define RUNTYPE 0 //0: create routing table
-				  //1: read routing table from file
 
 std::string RT_FILENAME; //routing table filename
 std::string DOWNPORT_FNAME; //file containing list of down ports

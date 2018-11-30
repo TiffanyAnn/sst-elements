@@ -636,7 +636,7 @@ class topoDragonFly(Topo):
         Topo.__init__(self)
         self.topoKeys = ["topology", "debug", "num_ports", "flit_size", "link_bw", "xbar_bw",
         "dragonfly:hosts_per_router", "dragonfly:routers_per_group", "dragonfly:intergroup_per_router", "dragonfly:num_groups","dragonfly:intergroup_links","input_latency","output_latency","input_buf_size","output_buf_size","dragonfly:global_route_mode", ]
-        self.topoOptKeys = ["xbar_arb","link_bw:host","link_bw:group","link_bw:global","input_latency:host","input_latency:group","input_latency:global","output_latency:host","output_latency:group","output_latency:global","input_buf_size:host","input_buf_size:group","input_buf_size:global","output_buf_size:host","output_buf_size:group","output_buf_size:global","dragonfly:route","dragonfly:run", "rt_filename"]
+        self.topoOptKeys = ["xbar_arb","link_bw:host","link_bw:group","link_bw:global","input_latency:host","input_latency:group","input_latency:global","output_latency:host","output_latency:group","output_latency:global","input_buf_size:host","input_buf_size:group","input_buf_size:global","output_buf_size:host","output_buf_size:group","output_buf_size:global","route","runtype", "rt_filename"]
         self.global_link_map = None
         self.global_routes = "absolute"
 

@@ -21,8 +21,7 @@ merlinParams.downPort_filename -- filename of the list of disabled ports
 
 To change the values, they can either be changed in the <sim>Params.py file or by command line as follows:
 
-sst ./emberLoad.py --model-options='--simConfig <simFile> --param 'merlin:merlinParams.route=<int> merlinParams.runtype=<int> merlinParams.rt_filename=<string> merlinParams.downPort_filename=<string>''
-
+sst ./emberLoad.py --model-options='--simConfig <simFile> --param merlin:merlinParams.route=<int>  --param merlin:merlinParams.runtype=<int>  --param merlin:merlinParams.rt_filename=<string> --param merlin:merlinParams.downPort_filename=<string>'
 
 
 
