@@ -423,7 +423,7 @@ if rtrArb:
 print "EMBER: network: BW={0} pktSize={1} flitSize={2}".format(
         networkParams['link_bw'], networkParams['packetSize'], networkParams['flitSize'])
 
-if len(params['merlin']) == 0:
+if len(params['merlin']) <= 1:
     sst.merlin._params.update( topoInfo.getNetworkParams() )
 
 print "EMBER: merlin: ROUTE={0} RUNTYPE={1} RT_FNAME={2}".format(sst.merlin._params["dragonfly:route"], sst.merlin._params["dragonfly:runtype"], sst.merlin._params["rt_filename"])

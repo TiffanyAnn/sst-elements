@@ -45,7 +45,7 @@ extern int ROUTE;  /* 0 is 1st direct route,
 				          set to any other number to disable */
 extern std::string RT_FILENAME;
 
-extern std::unordered_multimap<unsigned int,unsigned int>umap; //the routing table
+extern std::unordered_multimap<uint64_t,uint64_t>umap; //the routing table
 extern std::unordered_set<unsigned int>downRoutes; //routes unavailable due to link failures
 extern std::unordered_set<unsigned int>downPorts; //ports marked as disabled
 

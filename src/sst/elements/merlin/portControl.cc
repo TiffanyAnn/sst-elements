@@ -466,8 +466,8 @@ PortControl::finish() {
 	 		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
 	 		std::cout << "number of packets routed minimally: " << directRoute << "\n";
 	 		std::cout << "number of packets adaptively routed: " << valiantRoute << "\n";
-	 	//	std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
-	 	//	std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
+	 	   std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
+	 	   std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
 	 		std::cout << "total packets: " << totalPackets << "\n";
 	 		hasPrinted = true;
 	 	}
