@@ -392,15 +392,16 @@ for a in params['hermes']:
 
 for a in params['merlin']:
     key, value = a.split("=")
-    if key in sst.merlin._params:
-        print "override merlinParams {}={} with {}".format( key, sst.merlin._params[key], value )
+    if key in merlinParams:
+        print "override merlinParams {}={} with {}".format( key, merlinParams[key], value )
     else:
         print "set merlin {}={}".format( key, value )
-    sst.merlin._params[key] = value
+    merlinParams[key] = value
 
 
 nicParams["packetSize"] =	networkParams['packetSize']
 nicParams["link_bw"] = networkParams['link_bw']
+
 sst.merlin._params["link_lat"] = networkParams['link_lat']
 sst.merlin._params["link_bw"] = networkParams['link_bw']
 sst.merlin._params["xbar_bw"] = networkParams['link_bw']
@@ -413,8 +414,8 @@ sst.merlin._params["output_buf_size"] = networkParams['output_buf_size']
 sst.merlin._params["rt_filename"] = merlinParams['merlinParams.rt_filename']
 sst.merlin._params["downPort_filename"] = merlinParams['merlinParams.downPort_filename']
 
-sst.merlin._params["dragonfly:route"] = merlinParams['merlinParams.route']
-sst.merlin._params["dragonfly:runtype"] = merlinParams['merlinParams.runtype']
+sst.merlin._params["route"] = merlinParams['merlinParams.route']
+sst.merlin._params["runtype"] = merlinParams['merlinParams.runtype']
 
 if "network_inspectors" in networkParams.keys():
     sst.merlin._params["network_inspectors"] = networkParams['network_inspectors']
@@ -429,7 +430,7 @@ print "EMBER: network: BW={0} pktSize={1} flitSize={2}".format(
 if len(params['merlin']) <= 4:
     sst.merlin._params.update( topoInfo.getNetworkParams() )
 
-print "EMBER: merlin: ROUTE={0} RUNTYPE={1} ROUTING_ALGO={2} PORTS_FNAME={3}".format(sst.merlin._params["dragonfly:route"], sst.merlin._params["dragonfly:runtype"], 
+print "EMBER: merlin: ROUTE={0} RUNTYPE={1} ROUTING_ALGO={2} PORTS_FNAME={3}".format(sst.merlin._params["route"], sst.merlin._params["runtype"],
 sst.merlin._params["dragonfly:algorithm"],
 sst.merlin._params["downPort_filename"])
 
