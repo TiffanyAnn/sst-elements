@@ -330,11 +330,11 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
 	 int packets = 0;
 
     topo_dragonfly_event *td_ev = static_cast<topo_dragonfly_event*>(ev);
-	 packets++;
-	 allPackets += packets;
 
 	 bool r0 = false; bool r1 = false;
 	 bool r2 = false; bool r3 = false;
+
+	 //check for down routes
 if (RUNTYPE == 1){
 		uint64_t myDest, mySrc;
 		myDest = (uint64_t)ev->getDest();
@@ -389,7 +389,12 @@ if (RUNTYPE == 1){
         int valiant_route_credits = output_credits[valiant_route_port * num_vcs + vc];
 
         int drc = 0; int vrc = 0; //variables for checking if rerouting due to failed link
-
+if(RUNTYPE == 0){
+	if ((ROUTE==0)||(ROUTE==1))
+		valiant_route_credits = -1;
+		if ((ROUTE==2)||(ROUTE==3))
+			direct_route_credits = -1;
+}
  if(RUNTYPE == 1){
   // direct routes are down
   if(r0 == true || r1 == true) { direct_route_credits = -1; drc = -1; }
@@ -397,7 +402,7 @@ if (RUNTYPE == 1){
   if(r2 == true || r3 == true) { valiant_route_credits = -1; vrc = -1; }
  }
 // (ROUTE!=0) || (ROUTE!=1) --> need for RUNTYPE==0. Won't take adaptive if a direct route has been specified
-      if (((ROUTE!=0)||(ROUTE!=1)) || (valiant_route_credits > (int)((double)direct_route_credits * adaptive_threshold)) ) {
+      if (((ROUTE==2)||(ROUTE==3)) || (valiant_route_credits > (int)((double)direct_route_credits * adaptive_threshold)) ) {
         td_ev->setNextPort(valiant_route_port);
         valPackets++;
 		  td_ev->setRouting(1); //set as valiant route taken

@@ -458,7 +458,7 @@ PortControl::finish() {
 	 	//print route info to file
 	 	if(hasPrinted == false){
 	 		writeRoutes();
-			writePortPairs();
+			//writePortPairs();
 	 		hasPrinted = true;
 	 	}
 	}
@@ -564,7 +564,7 @@ PortControl::init(unsigned int phase) {
 				uint64_t local, remote;
 				uint64_t local_group, local_rtr, remote_group, remote_rtr;
 
-				if ((topo->getPortLogicalGroup(port_number) == "global") && (topo->getPortLogicalGroup(remote_port_number) == "global")){
+				//if ((topo->getPortLogicalGroup(port_number) != "host") && (topo->getPortLogicalGroup(remote_port_number) != "host")){
 				// map from numbering scheme used in portControl
 				// to numbering scheme used in the topology files
 				local_group = uint64_t(rtr_id/RTRS_PER_GRP);
@@ -581,7 +581,7 @@ PortControl::init(unsigned int phase) {
 					remotePorts.insert(remote);
 					portPairs.insert(std::make_pair(local,remote));
 				}
-        }
+        //}
 	     }
         }
         break;
@@ -888,6 +888,7 @@ PortControl::handle_input_r2r(Event* ev)
 		 if(event->getRouting() == 0) { directRoute++; }
 		 if(event->getRouting() == 1) { valiantRoute++; }
 		 totalPackets++;
+		 //std::cout << rtr_id << " " << port_number << "\n";
 	    input_buf[curr_vc].push(event);
 	    input_buf_count[curr_vc]++;
 
