@@ -299,20 +299,20 @@ topo_dragonfly::route(int port, int vc, internal_router_event* ev)
         if(ev->getTrack() == true){
         	printf("ev->dest: %u dest_grp: %u dest_rtr: %u next_port: %u\n",
                     ev->getDest(), td_ev->dest.group, td_ev->dest.router, next_port);
-    	//	unsigned int src_to_dest0 = (0 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    	//	unsigned int src_to_dest1 = (1 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    	//	unsigned int src_to_dest2 = (2 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    	//	unsigned int src_to_dest3 = (3 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    	//	printf("r0: %d r1: %d r2: %d r3: %d\n",  src_to_dest0,  src_to_dest1, src_to_dest2, src_to_dest3);
     	}
 
         output.verbose(CALL_INFO, 1, 1, "%u:%u, Recv: %d/%d  Setting Next Port/VC:  %u/%u\n", group_id, router_id, port, vc, next_port, td_ev->getVC());
         td_ev->setNextPort(next_port);
 
     if (RUNTYPE == 0){
-    		uint64_t src_to_dest = (((uint64_t)ROUTE << 16) | ((uint64_t)ev->getSrc() << 8) | ev->getDest());
-    		uint64_t link = (((uint64_t)group_id << 16) | ((uint64_t)router_id << 8) | port);
-    		umap.insert(std::make_pair(src_to_dest,link));
+		 uint64_t src_to_dest, mySrc, myDest, link;
+		 mySrc=(uint64_t)ev->getSrc();
+		 myDest=(uint64_t)ev->getDest();
+
+		 src_to_dest = (mySrc << 16) | (myDest << 8) | (uint64_t)ROUTE;
+		 link = (((uint64_t)group_id << 16) | ((uint64_t)router_id << 8) | port);
+
+    	 umap.insert(std::make_pair(src_to_dest,link));
     }
 
     output.verbose(CALL_INFO, 1, 1, "%u:%u, Recv: %d/%d  Setting Next Port/VC:  %u/%u\n", group_id, router_id, port, vc, next_port, td_ev->getVC());
@@ -336,17 +336,21 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
 	 bool r0 = false; bool r1 = false;
 	 bool r2 = false; bool r3 = false;
 if (RUNTYPE == 1){
-    	if(isRouteDown((uint64_t)((0 << 16) | (ev->getSrc() << 8) | ev->getDest())) == true)
+		uint64_t myDest, mySrc;
+		myDest = (uint64_t)ev->getDest();
+		mySrc = (uint64_t)ev->getSrc();
+    	if(isRouteDown((mySrc << 16) | (myDest << 8) | 0) == true)
         r0 = true;
-    	if(isRouteDown((uint64_t)((1 << 16) | (ev->getSrc() << 8) | ev->getDest())) == true)
+    	if(isRouteDown((mySrc << 16) | (myDest << 8) | 1) == true)
         r1 = true;
-      if(isRouteDown((uint64_t)((2 << 16) | (ev->getSrc() << 8) | ev->getDest())) == true)
+      if(isRouteDown((mySrc << 16) | (myDest << 8) | 2) == true)
         r2 = true;
-      if(isRouteDown((uint64_t)((3 << 16) | (ev->getSrc() << 8) | ev->getDest())) == true)
+      if(isRouteDown((mySrc << 16) | (myDest << 8) | 3) == true)
         r3 = true;
-		std::cout << "r0: " << r0 << " r1: " << r1 << " r2: " << r2 << " r3: " << r3 << "\n";
+
     	// if all routes are marked as unavailable then routing will fail
     	if((r0 == true) && (r1 == true) && (r2==true) && (r3==true)){
+			std::cout << "r0: " << ((mySrc << 16) | (myDest << 8) | 0) << " r1: " << ((mySrc << 16) | (myDest << 8) | 1) << " r2: " << ((mySrc << 16) | (myDest << 8) | 2) << " r3: " << ((mySrc << 16) | (myDest << 8) | 3) << "\n";
     		printf("ERROR_1: No available routes from %d -> %d\n", ev->getSrc(), ev->getDest());
           exit( EXIT_FAILURE);
     	}
