@@ -271,7 +271,9 @@ private:
 
 class internal_router_event : public BaseRtrEvent {
     int next_port;
-    int routing; //0 for direct, 1 for valiant
+    int routeTaken; //minimal or valiant route taken?
+    int dlReroute; //rerouting to minimal or valiant route occurred due to disabled link
+    int dlLinkEncountered; //packet encountered a disabled/down link
     int next_vc;
     int vc;
     int credit_return_vc;
@@ -304,8 +306,14 @@ public:
     inline void setNextPort(int np) {next_port = np; return;}
     inline int getNextPort() {return next_port;}
 
-    inline void setRouting(int rt) {routing = rt; return;}
-    inline int getRouting() {return routing;}
+    inline void setRouting(int rt) {routeTaken = rt; return;}
+    inline int getRouting() {return routeTaken;}
+
+    inline void setdlReroute(int rt) {dlReroute = rt; return;}
+    inline int getdlReroute() {return dlReroute;}
+
+    inline void setdlLinkEncountered(int rt) {dlLinkEncountered = rt; return;}
+    inline int getdlLinkEncountered() {return dlLinkEncountered;}
 
     // inline void setNextVC(int vc) {next_vc = vc; return;}
     // inline int getNextVC() {return next_vc;}
@@ -338,7 +346,9 @@ public:
     void serialize_order(SST::Core::Serialization::serializer &ser)  override {
         BaseRtrEvent::serialize_order(ser);
         ser & next_port;
-        ser & routing;
+        ser & routeTaken; //minimal or valiant route taken?
+        ser & dlReroute; //rerouting to minimal or valiant route occurred due to disabled link
+        ser & dlLinkEncountered; //packet encountered a disabled/down link
         ser & next_vc;
         ser & vc;
         ser & credit_return_vc;

@@ -33,6 +33,9 @@ extern int valBlockedCount;
 extern int dirPacketCount;
 extern int valPacketCount;
 extern int allPackets;
+extern int valiantRoute;
+extern int directRoute;
+extern int totalPackets;
 
 extern int RUNTYPE; //0: create routing table
 				        //1: read routing table from file

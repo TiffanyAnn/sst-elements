@@ -19,6 +19,7 @@
 #include "sst/core/rng/xorshift.h"
 
 #include "dragonfly.h"
+#include "sst/elements/merlin/merlin.h"
 
 #include <stdlib.h>
 #include <sstream>
@@ -321,6 +322,7 @@ topo_dragonfly::route(int port, int vc, internal_router_event* ev)
 
 void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
 {
+
     if ( algorithm != ADAPTIVE_LOCAL ) return;
 	 int downLinkEncountered = 0;
 	 int minBlocked =0;
@@ -331,6 +333,9 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
 
     topo_dragonfly_event *td_ev = static_cast<topo_dragonfly_event*>(ev);
 
+	 td_ev->setdlReroute(-1);
+	 td_ev->setdlLinkEncountered(-1);
+	 
 	 bool r0 = false; bool r1 = false;
 	 bool r2 = false; bool r3 = false;
 
@@ -352,7 +357,13 @@ if (RUNTYPE == 1){
     	if((r0 == true) && (r1 == true) && (r2==true) && (r3==true)){
 			std::cout << "r0: " << ((mySrc << 16) | (myDest << 8) | 0) << " r1: " << ((mySrc << 16) | (myDest << 8) | 1) << " r2: " << ((mySrc << 16) | (myDest << 8) | 2) << " r3: " << ((mySrc << 16) | (myDest << 8) | 3) << "\n";
     		printf("ERROR_1: No available routes from %d -> %d\n", ev->getSrc(), ev->getDest());
-          exit( EXIT_FAILURE);
+			std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
+	 		std::cout << "number of packets routed minimally: " << directRoute << "\n";
+	 		std::cout << "number of packets adaptively routed: " << valiantRoute << "\n";
+	 	   std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
+	 	   std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
+	 		std::cout << "total packets: " << totalPackets << "\n";
+         exit( EXIT_FAILURE);
     	}
   }
 
@@ -407,13 +418,16 @@ if(RUNTYPE == 0){
         valPackets++;
 		  td_ev->setRouting(1); //set as valiant route taken
         if(drc == -1) {
-			  downLinkEncountered++; minBlocked++; } //rerouted from direct route due to failed link
+			  downLinkEncountered++; td_ev->setdlLinkEncountered(1);
+			  minBlocked++; td_ev->setdlReroute(1);} //rerouted from direct route due to failed link
       }
       else {
         td_ev->setNextPort(direct_route_port);
         minPackets++;
 		  td_ev->setRouting(0); //set as direct route taken
-        if(vrc == -1) { downLinkEncountered++; valBlocked++; } //rerouted from valiant route due to link fail
+        if(vrc == -1) {
+			  downLinkEncountered++; td_ev->setdlLinkEncountered(1);
+			  valBlocked++; td_ev->setdlReroute(0);} //rerouted from valiant route due to link fail
       }
       //copy the tally variables to the global counts
       downLinkCount += downLinkEncountered;
@@ -535,14 +549,9 @@ if (RUNTYPE == 1){
 			td_ev->setRouting(1); //set as valiant route taken
 			if (RUNTYPE == 1){
 				if((r0==true && r1==true) &&(temp_vrc < (int)((double)temp_drc*adaptive_threshold))){
-					downLinkEncountered++; minBlocked++;
+					downLinkEncountered++; td_ev->setdlLinkEncountered(1);
+					minBlocked++; td_ev->setdlReroute(1);
 				}
-			}
-			if(ev->getTrack() == true){
-				std::cout << "taking valiant route\n";
-				printf("grp: %u rtr: %u next_port: %u\n",
-				group_id, router_id, valiant_route_port);
-				std::cout << "endpointID: " << getEndpointID(valiant_route_port) << "\n";
 			}
     }
     else { // Use direct route
@@ -553,12 +562,8 @@ if (RUNTYPE == 1){
 				minPackets++;
 				if (RUNTYPE == 1){
 					if((r3 == true || r2 == true) && temp_vrc > (int)((double)temp_drc*adaptive_threshold)){
-						downLinkEncountered++; valBlocked++; }
-				}
-				if(ev->getTrack() == true){
-					std::cout << "taking direct route\n";
-					printf("src: %u grp: %u rtr: %u next_port: %u\n",
-					td_ev->src_group,group_id, router_id, direct_route_port);
+						downLinkEncountered++; td_ev->setdlLinkEncountered(1);
+						valBlocked++; td_ev->setdlReroute(0);}
 				}
     }
 		downLinkCount += downLinkEncountered;

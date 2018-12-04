@@ -166,6 +166,13 @@ private:
     Statistic<uint64_t>* idle_time;
     Statistic<uint64_t>* width_adj_count;
 
+    Statistic<uint64_t>* minBlockedPkts;
+    Statistic<uint64_t>* valBlockedPkts;
+    Statistic<uint64_t>* minPkts;
+    Statistic<uint64_t>* valPkts;
+    Statistic<uint64_t>* totalPkts;
+    Statistic<uint64_t>* downLinksEncountered;
+
 	// SAI Metrics (S+A+I=1) corresponds to
 	// sai_win_start to (sai_win_start + sai_win_length)
 	double stalled;

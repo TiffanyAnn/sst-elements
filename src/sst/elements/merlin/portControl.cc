@@ -35,6 +35,9 @@ bool fileRead = false;
 int directRoute = 0;
 int valiantRoute = 0;
 int totalPackets = 0;
+int downLinkEncountered = 0;
+int valBlocked = 0;
+int minBlocked = 0;
 
 static std::unordered_multimap<unsigned int,unsigned int>portPairs;
 static std::unordered_set<unsigned int>localPorts;
@@ -285,6 +288,13 @@ PortControl::PortControl(Params &p, Router* rif, int rtr_id, std::string link_po
     output_port_stalls = rif->registerStatistic<uint64_t>("output_port_stalls", port_name);
     idle_time = rif->registerStatistic<uint64_t>("idle_time", port_name);
     width_adj_count = rif->registerStatistic<uint64_t>("width_adj_count", port_name);
+
+	 minBlockedPkts = rif->registerStatistic<uint64_t>("minBlockedPkts", port_name);
+	 valBlockedPkts = rif->registerStatistic<uint64_t>("valBlockedPkts", port_name);
+	 minPkts = rif->registerStatistic<uint64_t>("minPkts", port_name);
+	 valPkts = rif->registerStatistic<uint64_t>("valPkts", port_name);
+	 totalPkts = rif->registerStatistic<uint64_t>("totalPkts", port_name);
+	 downLinksEncountered = rif->registerStatistic<uint64_t>("downLinksEncountered", port_name);
 
 	// set the SAI metrics to 0
 	stalled = 0;
@@ -809,8 +819,12 @@ PortControl::handle_input_n2r(Event* ev)
         rtr_event->setCreditReturnVC(vn);
         int curr_vc = rtr_event->getVC();
 	    topo->route(port_number, rtr_event->getVC(), rtr_event);
-		 if(rtr_event->getRouting() == 0) { directRoute++; }
-		 if(rtr_event->getRouting() == 1) { valiantRoute++; }
+		 if(rtr_event->getRouting() == 0) { directRoute++; minPkts->addData(1);}
+		 if(rtr_event->getRouting() == 1) { valiantRoute++; valPkts->addData(1);}
+		 if(rtr_event->getdlReroute() == 0) {valBlocked++; valBlockedPkts->addData(1);}
+		 if(rtr_event->getdlReroute() == 1) {minBlocked++; minBlockedPkts->addData(1);}
+		 if(rtr_event->getdlLinkEncountered() == 1) {downLinkEncountered++; downLinksEncountered->addData(1);}
+		 totalPkts->addData(1);
 	    input_buf[curr_vc].push(rtr_event);
 	    input_buf_count[curr_vc]++;
 
@@ -885,10 +899,14 @@ PortControl::handle_input_r2r(Event* ev)
 	    // Need to do the routing
 	    int curr_vc = event->getVC();
 	    topo->route(port_number, event->getVC(), event);
-		 if(event->getRouting() == 0) { directRoute++; }
-		 if(event->getRouting() == 1) { valiantRoute++; }
+		 if(event->getRouting() == 0) { directRoute++; minPkts->addData(1);}
+		 if(event->getRouting() == 1) { valiantRoute++; valPkts->addData(1);}
+		 if(event->getdlReroute() == 0) {valBlocked++; valBlockedPkts->addData(1);}
+		 if(event->getdlReroute() == 1) {minBlocked++; minBlockedPkts->addData(1);}
+		 if(event->getdlLinkEncountered() == 1) {downLinkEncountered++; downLinksEncountered->addData(1);}
+		 totalPkts->addData(1);
 		 totalPackets++;
-		 //std::cout << rtr_id << " " << port_number << "\n";
+
 	    input_buf[curr_vc].push(event);
 	    input_buf_count[curr_vc]++;
 

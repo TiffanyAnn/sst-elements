@@ -73,8 +73,8 @@ emberParams = {
 }
 
 merlinParams = {
-    "merlinParams.route" : 0,
-    "merlinParams.runtype" : 0,
+    "merlinParams.route" : 5,
+    "merlinParams.runtype" : 2,
     "merlinParams.rt_filename" : "3d_sweep_DF_16384_rt.txt",
     "merlinParams.downPort_filename" : "5percent_down.txt",
 }
