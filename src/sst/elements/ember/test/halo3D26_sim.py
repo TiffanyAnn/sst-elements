@@ -7,7 +7,7 @@ def getWorkFlow( defaults ):
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
-    motif['cmd'] = "Halo3D26 nx=1024 ny=1024 nz=1024 peflops=75000000000000 fields_per_cell=16"
+    motif['cmd'] = "Halo3D26 nx=4000 ny=4000 nz=4000 peflops=75000000000000 fields_per_cell=30"
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
@@ -16,7 +16,7 @@ def getWorkFlow( defaults ):
 
 	# numNodes = 0 implies use all nodes on network
     numNodes = 0
-    numCores = 1
+    numCores = 4
 
     return workFlow, numNodes, numCores
 

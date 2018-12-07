@@ -278,7 +278,6 @@ class internal_router_event : public BaseRtrEvent {
     int vc;
     int credit_return_vc;
     RtrEvent* encap_ev;
-//    int failedLinkCount = 0;
 
 
 public:

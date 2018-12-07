@@ -432,8 +432,6 @@ hr_router::clock_handler(Cycle_t cycle)
         if ( progress_vcs[i] > -1 ) {
             internal_router_event* ev = ports[i]->recv(progress_vcs[i]);
             ports[ev->getNextPort()]->send(ev,ev->getVC());
-            if(ev->getRouting() == 0){ dirPacks++; dirPacketCount = dirPacks;}
-            if(ev->getRouting() == 1){ valPacks++; valPacketCount = valPacks;}
             //if(ev->getTrack() == true){ std::cout << "" << id << ": " << "Moving VC " << progress_vcs[i] <<
              //	" for port " << i << " to port " << ev->getNextPort() << std::endl;}
 

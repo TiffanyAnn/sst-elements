@@ -464,7 +464,7 @@ topo.prepParams()
 topo.setEndPointFunc( loadInfo.setNode )
 topo.build()
 
-sst.setStatisticLoadLevel(9)
+sst.setStatisticLoadLevel(1)
 
 sst.setStatisticOutput("sst.statOutputCSV");
 sst.setStatisticOutputOptions({

@@ -16,7 +16,7 @@ def getWorkFlow( defaults ):
 
 	# numNodes = 0 implies use all nodes on network
     numNodes = 0
-    numCores = 1
+    numCores = 4
 
     return workFlow, numNodes, numCores
 

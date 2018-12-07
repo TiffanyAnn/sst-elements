@@ -7,7 +7,7 @@ def getWorkFlow( defaults ):
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
-    motif['cmd'] = "AllPingPong iterations=100 messageSize=1024"
+    motif['cmd'] = "AllPingPong iterations=1 messageSize=256"
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
@@ -16,7 +16,7 @@ def getWorkFlow( defaults ):
 
 	# numNodes = 0 implies use all nodes on network
     numNodes = 0
-    numCores = 1
+    numCores = 4
 
     return workFlow, numNodes, numCores
 

@@ -70,19 +70,19 @@ public:
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
-        { "send_bit_count",     "Count number of bits sent on link", "bits", 1},
-        { "send_packet_count",  "Count number of packets sent on link", "packets", 1},
-        { "output_port_stalls", "Time output port is stalled (in units of core timebase)", "time in stalls", 1},
-        { "xbar_stalls",        "Count number of cycles the xbar is stalled", "cycles", 1},
-        { "idle_time",          "Amount of time spent idle for a given port", "units of core timebase", 1},
-        { "width_adj_count",    "Number of times that link width was increased or decreased", "width adjustment count", 1},
+        { "send_bit_count",     "Count number of bits sent on link", "bits", 6},
+        { "send_packet_count",  "Count number of packets sent on link", "packets", 6},
+        { "output_port_stalls", "Time output port is stalled (in units of core timebase)", "time in stalls", 6},
+        { "xbar_stalls",        "Count number of cycles the xbar is stalled", "cycles", 6},
+        { "idle_time",          "Amount of time spent idle for a given port", "units of core timebase", 6},
+        { "width_adj_count",    "Number of times that link width was increased or decreased", "width adjustment count", 6},
         { "minBlockedPkts",    "Number of times that a packet was blocked from taking a min route due to a disabled link", "packets", 1},
         { "valBlockedPkts",    "Number of times that a packet was blocked from taking a val route due to a disabled link", "packets", 1},
         { "minPkts",    "Number of times that packets took a minimal route", "packets", 1},
         { "valPkts",    "Number of times that packets took a valiant route", "packets", 1},
         { "totalPkts",    "Total number of packets sent", "packets", 1},
         { "downLinksEncountered",    "Number of times a disabled link was encountered", "packets", 1}
-        
+
     )
 
     SST_ELI_DOCUMENT_PORTS(

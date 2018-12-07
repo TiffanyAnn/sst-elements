@@ -475,11 +475,11 @@ PortControl::finish() {
 
 	 if (RUNTYPE == 1){
 	 	if(hasPrinted == false){
-	 		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
+	 		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkEncountered << "\n";
 	 		std::cout << "number of packets routed minimally: " << directRoute << "\n";
 	 		std::cout << "number of packets adaptively routed: " << valiantRoute << "\n";
-	 	   std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
-	 	   std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
+	 	   std::cout << "minimal blocked packets (routed to val): " << minBlocked << "\n";
+	 	   std::cout << "adatptive blocked packets (routed to min): " << valBlocked << "\n";
 	 		std::cout << "total packets: " << totalPackets << "\n";
 	 		hasPrinted = true;
 	 	}
@@ -818,13 +818,17 @@ PortControl::handle_input_n2r(Event* ev)
         internal_router_event* rtr_event = topo->process_input(event);
         rtr_event->setCreditReturnVC(vn);
         int curr_vc = rtr_event->getVC();
-	    topo->route(port_number, rtr_event->getVC(), rtr_event);
-		 if(rtr_event->getRouting() == 0) { directRoute++; minPkts->addData(1);}
-		 if(rtr_event->getRouting() == 1) { valiantRoute++; valPkts->addData(1);}
-		 if(rtr_event->getdlReroute() == 0) {valBlocked++; valBlockedPkts->addData(1);}
-		 if(rtr_event->getdlReroute() == 1) {minBlocked++; minBlockedPkts->addData(1);}
-		 if(rtr_event->getdlLinkEncountered() == 1) {downLinkEncountered++; downLinksEncountered->addData(1);}
-		 totalPkts->addData(1);
+
+		  topo->route(port_number, rtr_event->getVC(), rtr_event);
+
+		  if(rtr_event->getRouting() == 1) { directRoute++; minPkts->addData(1); }
+		  if(rtr_event->getRouting() == 2) { valiantRoute++; valPkts->addData(1); }
+		  if(rtr_event->getdlReroute() == 1) { valBlocked++; valBlockedPkts->addData(1); }
+		  if(rtr_event->getdlReroute() == 2) { minBlocked++; minBlockedPkts->addData(1); }
+		  if(rtr_event->getdlLinkEncountered() == 1) { downLinkEncountered++; downLinksEncountered->addData(1); }
+		  totalPkts->addData(1);
+		  totalPackets++;
+
 	    input_buf[curr_vc].push(rtr_event);
 	    input_buf_count[curr_vc]++;
 
@@ -899,11 +903,12 @@ PortControl::handle_input_r2r(Event* ev)
 	    // Need to do the routing
 	    int curr_vc = event->getVC();
 	    topo->route(port_number, event->getVC(), event);
-		 if(event->getRouting() == 0) { directRoute++; minPkts->addData(1);}
-		 if(event->getRouting() == 1) { valiantRoute++; valPkts->addData(1);}
-		 if(event->getdlReroute() == 0) {valBlocked++; valBlockedPkts->addData(1);}
-		 if(event->getdlReroute() == 1) {minBlocked++; minBlockedPkts->addData(1);}
-		 if(event->getdlLinkEncountered() == 1) {downLinkEncountered++; downLinksEncountered->addData(1);}
+
+		 if(event->getRouting() == 1) { directRoute++; minPkts->addData(1); }
+		 if(event->getRouting() == 2) { valiantRoute++; valPkts->addData(1); }
+		 if(event->getdlReroute() == 1) { valBlocked++; valBlockedPkts->addData(1); }
+		 if(event->getdlReroute() == 2) { minBlocked++; minBlockedPkts->addData(1); }
+		 if(event->getdlLinkEncountered() == 1) { downLinkEncountered++; downLinksEncountered->addData(1); }
 		 totalPkts->addData(1);
 		 totalPackets++;
 

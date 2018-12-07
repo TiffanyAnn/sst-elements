@@ -39,7 +39,7 @@
 
 using namespace SST::Merlin;
 int enter = 0;
-static int downLinkEncountered = 0;
+int downLinkEncountered2 = 0;
 /*int downLinkCount;
 int minBlockedCount;
 int valBlockedCount;
@@ -47,11 +47,11 @@ int dirPacketCount;
 int valPacketCount;
 int allPackets; */
 
-static int minBlocked =0;
-static int valBlocked = 0;
-static int minPackets = 0;
-static int valPackets = 0;
-static int packets = 0;
+int minBlocked2 =0;
+int valBlocked2 = 0;
+int minPackets2 = 0;
+int valPackets2 = 0;
+int packets2 = 0;
 bool phase0 = true;
 int getKey(unsigned int val){
     return (val ^ 5300);
@@ -320,8 +320,8 @@ void topo_dragonfly2::route(int port, int vc, internal_router_event* ev)
 void topo_dragonfly2::reroute(int port, int vc, internal_router_event* ev)
 {
 
-packets++;
-allPackets = packets;
+packets2++;
+allPackets = packets2;
 
 #if RUNTYPE == 1
 	bool r0 = false; bool r1 = false;
@@ -357,8 +357,8 @@ allPackets = packets;
     // input to the network and at the input to a group for adaptively
     // routed packets
     if ( port >= params.p && port < (params.p + params.a-1)){
-		minPackets++;
-	//	dirPacketCount = minPackets;
+		minPackets2++;
+	//	dirPacketCount = minPackets2;
 		td_ev->setRouting(0); //set as direct route taken
 		return;
 	}
@@ -367,8 +367,8 @@ allPackets = packets;
     if ( (port < params.p) && td_ev->dest.group == group_id ) {
         // If we're at the correct router, no adaptive needed
         if ( td_ev->dest.router == router_id){
-			minPackets++;
-		//	dirPacketCount = minPackets;
+			minPackets2++;
+		//	dirPacketCount = minPackets2;
 			td_ev->setRouting(0); //set as direct route taken
 			return;
 		}
@@ -391,9 +391,9 @@ allPackets = packets;
 #endif
         if (((ROUTE!=0) || (ROUTE!=1)) || (valiant_route_credits > (int)((double)direct_route_credits * adaptive_threshold)) ) {
             td_ev->setNextPort(valiant_route_port);
-			valPackets++;
+			valPackets2++;
 			td_ev->setRouting(1); //set as direct route not taken
-			if(drc == -1) { downLinkEncountered++; minBlocked++; }
+			if(drc == -1) { downLinkEncountered2++; minBlocked2++; }
 			if(ev->getTrack() == true){
 				std::cout << "taking valiant route\n";
 				printf("dest_grp: %u dest_rtr: %u next_port: %u\n",
@@ -402,27 +402,27 @@ allPackets = packets;
         }
         else {
             td_ev->setNextPort(direct_route_port);
-			minPackets++;
+			minPackets2++;
 			td_ev->setRouting(0); //set as direct route taken
-			if(vrc == -1){ downLinkEncountered++; valBlocked++; }
+			if(vrc == -1){ downLinkEncountered2++; valBlocked2++; }
 			if(ev->getTrack() == true){
                 std::cout << "taking direct route\n";
                 printf("dest_grp: %u dest_rtr: %u next_port: %u\n",
 				td_ev->dest.group, td_ev->dest.router, direct_route_port);
             }
         }
-				downLinkCount = downLinkEncountered;
-				minBlockedCount = minBlocked;
-				valBlockedCount = valBlocked;
-			//	dirPacketCount = minPackets;
-			//	valPacketCount = valPackets;
+				downLinkCount = downLinkEncountered2;
+				minBlockedCount = minBlocked2;
+				valBlockedCount = valBlocked2;
+			//	dirPacketCount = minPackets2;
+			//	valPacketCount = valPackets2;
         return;
     }
 
     // If the dest is in the same group, no need to adaptively route
     if ( td_ev->dest.group == group_id ){
-		 minPackets++;
-		 //dirPacketCount = minPackets;
+		 minPackets2++;
+		 //dirPacketCount = minPackets2;
 		 td_ev->setRouting(0); //set as direct route taken
 		 return;
 	}
@@ -538,9 +538,9 @@ allPackets = packets;
 	if((valiant_route_credits!=direct_route_credits) && valiant_route_credits > (int)((double)direct_route_credits*adaptive_threshold))
 	{ // Use valiant route
 #if RUNTYPE == 1
-		if((r0==true && r1 == true) && temp_vrc < (int)((double)temp_drc*adaptive_threshold)){ downLinkEncountered++; minBlocked++; }
+		if((r0==true && r1 == true) && temp_vrc < (int)((double)temp_drc*adaptive_threshold)){ downLinkEncountered2++; minBlocked2++; }
 #endif
-		valPackets++;
+		valPackets2++;
 		td_ev->setRouting(1); //set as valiant route taken
         td_ev->dest.mid_group = td_ev->dest.mid_group_shadow;
         td_ev->setNextPort(valiant_route_port);
@@ -553,9 +553,9 @@ allPackets = packets;
     }
     else { // Use direct route
 #if RUNTYPE == 1
-		if((r3 == true || r2 == true) && temp_vrc > (int)((double)temp_drc*adaptive_threshold)){ downLinkEncountered++; valBlocked++; }
+		if((r3 == true || r2 == true) && temp_vrc > (int)((double)temp_drc*adaptive_threshold)){ downLinkEncountered2++; valBlocked2++; }
 #endif
-		minPackets++;
+		minPackets2++;
 		td_ev->setRouting(0); //set as direct route taken
 		td_ev->dest.mid_group = td_ev->dest.group;
         td_ev->setNextPort(direct_route_port);
@@ -566,11 +566,11 @@ allPackets = packets;
             td_ev->src_group,group_id, router_id, direct_route_port);
         }
     }
-	downLinkCount = downLinkEncountered;
-	minBlockedCount = minBlocked;
-    valBlockedCount = valBlocked;
-	//dirPacketCount = minPackets;
-	//valPacketCount = valPackets;
+	downLinkCount = downLinkEncountered2;
+	minBlockedCount = minBlocked2;
+    valBlockedCount = valBlocked2;
+	//dirPacketCount = minPackets2;
+	//valPacketCount = valPackets2;
 
 }
 
@@ -819,8 +819,8 @@ bool isPortDown(uint32_t src_grp_id, uint32_t group_id, uint32_t router_id, int 
 				((packedAddress & 0x0000FF00) >> 8),
 				(packedAddress & 0x000000FF));*/
 
-		downLinkEncountered++;
-		downLinkCount = downLinkEncountered;
+		downLinkEncountered2++;
+		downLinkCount = downLinkEncountered2;
 		return true;
 	}
 	else

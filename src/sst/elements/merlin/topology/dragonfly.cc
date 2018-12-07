@@ -324,18 +324,19 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
 {
 
     if ( algorithm != ADAPTIVE_LOCAL ) return;
-	 int downLinkEncountered = 0;
-	 int minBlocked =0;
+	 //int downLinkEncountered = 0;
+	/* int minBlocked =0;
 	 int valBlocked = 0;
 	 int minPackets = 0;
 	 int valPackets = 0;
-	 int packets = 0;
+	 int packets = 0;*/
 
     topo_dragonfly_event *td_ev = static_cast<topo_dragonfly_event*>(ev);
 
+	 td_ev->setRouting(-1);
 	 td_ev->setdlReroute(-1);
 	 td_ev->setdlLinkEncountered(-1);
-	 
+
 	 bool r0 = false; bool r1 = false;
 	 bool r2 = false; bool r3 = false;
 
@@ -377,9 +378,7 @@ if (RUNTYPE == 1){
     // input to the network and at the input to a group for adaptively
     // routed packets
     if ( port >= params.p && port < (params.p + params.a-1) ){
-      minPackets++; //this is considered a direct routing
-      dirPacketCount += minPackets;
-		td_ev->setRouting(0); //set as direct route taken
+		td_ev->setRouting(1); //set as direct route taken
       return;
 		}
 
@@ -387,9 +386,7 @@ if (RUNTYPE == 1){
     if ( port < params.p && td_ev->dest.group == group_id ) {
         // If we're at the correct router, no adaptive needed
         if ( td_ev->dest.router == router_id) {
-          minPackets++;
-          dirPacketCount += minPackets;
-			 td_ev->setRouting(0); //set as direct route taken
+			 td_ev->setRouting(1); //set as direct route taken
           return;
         }
 
@@ -415,34 +412,26 @@ if(RUNTYPE == 0){
 // (ROUTE!=0) || (ROUTE!=1) --> need for RUNTYPE==0. Won't take adaptive if a direct route has been specified
       if (((ROUTE==2)||(ROUTE==3)) || (valiant_route_credits > (int)((double)direct_route_credits * adaptive_threshold)) ) {
         td_ev->setNextPort(valiant_route_port);
-        valPackets++;
-		  td_ev->setRouting(1); //set as valiant route taken
+		  td_ev->setRouting(2); //set as valiant route taken
         if(drc == -1) {
-			  downLinkEncountered++; td_ev->setdlLinkEncountered(1);
-			  minBlocked++; td_ev->setdlReroute(1);} //rerouted from direct route due to failed link
+			  td_ev->setdlLinkEncountered(1);
+			  td_ev->setdlReroute(2); //rerouted from direct route due to failed link
+		  }
       }
       else {
         td_ev->setNextPort(direct_route_port);
-        minPackets++;
-		  td_ev->setRouting(0); //set as direct route taken
+		  td_ev->setRouting(1); //set as direct route taken
         if(vrc == -1) {
-			  downLinkEncountered++; td_ev->setdlLinkEncountered(1);
-			  valBlocked++; td_ev->setdlReroute(0);} //rerouted from valiant route due to link fail
+			  td_ev->setdlLinkEncountered(1);
+			  td_ev->setdlReroute(1); //rerouted from valiant route due to link fail
+		  }
       }
-      //copy the tally variables to the global counts
-      downLinkCount += downLinkEncountered;
-      minBlockedCount += minBlocked;
-      valBlockedCount += valBlocked;
-      dirPacketCount += minPackets;
-      valPacketCount += valPackets;
       return;
     }
 
     // If the dest is in the same group, no need to adaptively route
     if ( td_ev->dest.group == group_id ){
-      minPackets++;
-      dirPacketCount += minPackets;
-		td_ev->setRouting(0); //set as direct route taken
+		 td_ev->setRouting(1); //set as direct route taken
       return;
     }
 
@@ -468,7 +457,8 @@ if(RUNTYPE == 0){
 		int temp_drc1 = direct_route_credits1;
 		int temp_drc2 = direct_route_credits2;
 		int temp_drc = 0;
-		int temp_vrc1, temp_vrc2;
+		int temp_vrc1 = 0;
+		int temp_vrc2 = 0;
 		int temp_vrc = 0;
 
 if (RUNTYPE == 0){
@@ -501,7 +491,9 @@ if (RUNTYPE == 1){
     if ( port >= (params.p + params.a-1) ) {
         // Global port, no indirect routes.  Set credits negative so
         // it will never get chosen
-				temp_vrc = -1;
+		  temp_vrc = -1;
+		  temp_vrc1 = -1;
+		  temp_vrc2 = -1;
         valiant_route_credits = -1;
     }
     else {
@@ -545,33 +537,27 @@ if (RUNTYPE == 1){
         td_ev->dest.mid_group = td_ev->dest.mid_group_shadow;
         td_ev->setNextPort(valiant_route_port);
         td_ev->global_slice = valiant_slice;
-				valPackets++;
-			td_ev->setRouting(1); //set as valiant route taken
-			if (RUNTYPE == 1){
-				if((r0==true && r1==true) &&(temp_vrc < (int)((double)temp_drc*adaptive_threshold))){
-					downLinkEncountered++; td_ev->setdlLinkEncountered(1);
-					minBlocked++; td_ev->setdlReroute(1);
+
+		 //if (RUNTYPE == 1){
+		      td_ev->setRouting(2); //set as valiant route taken
+				if((r0==true && r1==true) && ( temp_vrc < (int)((double)temp_drc*adaptive_threshold))){
+					td_ev->setdlLinkEncountered(1);
+					td_ev->setdlReroute(2); //rerouted from direct route due to failed link
 				}
-			}
+			//}
     }
     else { // Use direct route
         td_ev->dest.mid_group = td_ev->dest.group;
         td_ev->setNextPort(direct_route_port);
         td_ev->global_slice = direct_slice;
-		  td_ev->setRouting(0); //set as direct route taken
-				minPackets++;
-				if (RUNTYPE == 1){
-					if((r3 == true || r2 == true) && temp_vrc > (int)((double)temp_drc*adaptive_threshold)){
-						downLinkEncountered++; td_ev->setdlLinkEncountered(1);
-						valBlocked++; td_ev->setdlReroute(0);}
-				}
-    }
-		downLinkCount += downLinkEncountered;
-		minBlockedCount += minBlocked;
-	  valBlockedCount += valBlocked;
-		dirPacketCount += minPackets;
-		valPacketCount += valPackets;
 
+				//if (RUNTYPE == 1){
+				   td_ev->setRouting(1); //set as direct route taken
+					if((r3 == true || r2 == true) && ( temp_vrc > (int)((double)temp_drc*adaptive_threshold))){
+						td_ev->setdlLinkEncountered(1);
+						td_ev->setdlReroute(1);} //rerouted from valiant route due to failed link
+				//}
+    }
 }
 
 
