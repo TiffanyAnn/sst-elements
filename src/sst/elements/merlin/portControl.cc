@@ -770,7 +770,6 @@ PortControl::dumpQueueState(port_queue_t& q, Output& out) {
 void
 PortControl::handle_input_n2r(Event* ev)
 {
-
 	// Check to see if this is a credit or data packet
 	// credit_event* ce = dynamic_cast<credit_event*>(ev);
 	// if ( ce != NULL ) {
@@ -821,13 +820,14 @@ PortControl::handle_input_n2r(Event* ev)
 
 		  topo->route(port_number, rtr_event->getVC(), rtr_event);
 
-		  if(rtr_event->getRouting() == 1) { directRoute++; minPkts->addData(1); }
-		  if(rtr_event->getRouting() == 2) { valiantRoute++; valPkts->addData(1); }
-		  if(rtr_event->getdlReroute() == 1) { valBlocked++; valBlockedPkts->addData(1); }
-		  if(rtr_event->getdlReroute() == 2) { minBlocked++; minBlockedPkts->addData(1); }
-		  if(rtr_event->getdlLinkEncountered() == 1) { downLinkEncountered++; downLinksEncountered->addData(1); }
-		  totalPkts->addData(1);
-		  totalPackets++;
+		  /*if((rtr_event->getdlLinkEncountered() == -1) && (rtr_event->getdlReroute() != -1)) {std::cout << "unset DL\n"; printf("routing: %d, dlReroute: %d\n", rtr_event->getRouting(), rtr_event->getdlReroute());}
+
+		  if(rtr_event->getRouting() == 1) { minPkts->addData(1); }
+		  if(rtr_event->getRouting() == 2) { valPkts->addData(1); }
+		  if(rtr_event->getdlReroute() == 1) { valBlockedPkts->addData(1); }
+		  if(rtr_event->getdlReroute() == 2) { minBlockedPkts->addData(1); }
+		  if(rtr_event->getdlLinkEncountered() == 1) { downLinksEncountered->addData(1); }
+		  totalPkts->addData(1);*/
 
 	    input_buf[curr_vc].push(rtr_event);
 	    input_buf_count[curr_vc]++;
@@ -904,6 +904,7 @@ PortControl::handle_input_r2r(Event* ev)
 	    int curr_vc = event->getVC();
 	    topo->route(port_number, event->getVC(), event);
 
+		 		  if((event->getdlLinkEncountered() == -1) && (event->getdlReroute() != -1)) {std::cout << "unset DL\n"; printf("routing: %d, dlReroute: %d\n", event->getRouting(), event->getdlReroute());}
 		 if(event->getRouting() == 1) { directRoute++; minPkts->addData(1); }
 		 if(event->getRouting() == 2) { valiantRoute++; valPkts->addData(1); }
 		 if(event->getdlReroute() == 1) { valBlocked++; valBlockedPkts->addData(1); }

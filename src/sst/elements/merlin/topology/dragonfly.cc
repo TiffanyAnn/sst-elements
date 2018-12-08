@@ -358,21 +358,9 @@ if (RUNTYPE == 1){
     	if((r0 == true) && (r1 == true) && (r2==true) && (r3==true)){
 			std::cout << "r0: " << ((mySrc << 16) | (myDest << 8) | 0) << " r1: " << ((mySrc << 16) | (myDest << 8) | 1) << " r2: " << ((mySrc << 16) | (myDest << 8) | 2) << " r3: " << ((mySrc << 16) | (myDest << 8) | 3) << "\n";
     		printf("ERROR_1: No available routes from %d -> %d\n", ev->getSrc(), ev->getDest());
-			std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
-	 		std::cout << "number of packets routed minimally: " << directRoute << "\n";
-	 		std::cout << "number of packets adaptively routed: " << valiantRoute << "\n";
-	 	   std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
-	 	   std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
-	 		std::cout << "total packets: " << totalPackets << "\n";
          exit( EXIT_FAILURE);
     	}
   }
-
-    if(ev->getTrack() == true){
-      std::cout << "========== reroute() ==========\n";
-      printf("src_grp: %u curr_grp: %u curr_rtr: %u curr_port: %u\n",
-              td_ev->src_group, group_id, router_id, port);
-    }
 
     // For now, we make the adaptive routing decision only at the
     // input to the network and at the input to a group for adaptively
@@ -538,25 +526,21 @@ if (RUNTYPE == 1){
         td_ev->setNextPort(valiant_route_port);
         td_ev->global_slice = valiant_slice;
 
-		 //if (RUNTYPE == 1){
 		      td_ev->setRouting(2); //set as valiant route taken
 				if((r0==true && r1==true) && ( temp_vrc < (int)((double)temp_drc*adaptive_threshold))){
 					td_ev->setdlLinkEncountered(1);
 					td_ev->setdlReroute(2); //rerouted from direct route due to failed link
 				}
-			//}
     }
     else { // Use direct route
         td_ev->dest.mid_group = td_ev->dest.group;
         td_ev->setNextPort(direct_route_port);
         td_ev->global_slice = direct_slice;
 
-				//if (RUNTYPE == 1){
 				   td_ev->setRouting(1); //set as direct route taken
 					if((r3 == true || r2 == true) && ( temp_vrc > (int)((double)temp_drc*adaptive_threshold))){
 						td_ev->setdlLinkEncountered(1);
 						td_ev->setdlReroute(1);} //rerouted from valiant route due to failed link
-				//}
     }
 }
 
