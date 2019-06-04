@@ -7,7 +7,7 @@ def getWorkFlow( defaults ):
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
-    motif['cmd'] = "AllPingPong iterations=1 messageSize=256"
+    motif['cmd'] = "AllPingPong iterations=100 messageSize=256"
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
@@ -22,16 +22,10 @@ def getWorkFlow( defaults ):
 
 def getNetwork():
 
-	#platform = 'chamaPSM'
-	#platform = 'chamaOpenIB'
-	#platform = 'bgq'
 	platform = 'allPingPong'
 
-	#topo = ''
-	#shape = ''
 	topo = 'dragonfly'
-	shape = '16:32:16:32'
-
+	shape = '16:32:16:16'
 	return platform, topo, shape
 
 def getDetailedModel():

@@ -1,0 +1,83 @@
+EMBER: platform: LQCD
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=LQCD_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/LQCD_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 0
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=0 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['LQCD', 'nx=144', 'ny=144', 'nz=144', 'nt=192', 'peflops=75000000000000']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+LQCD compute time resid: 36 mmvs4d: 134 ns
+LQCD nsquares size: x16y8z8t16
+LQCD square size: x9y18z18t12
+LQCD problem size: x144y144z144t192
+LQCD gather num_elements (1st and Naik): 26873856 80621568
+LQCD compute time resid: 36 mmvs4d: 134 ns
+LQCD iterations: 1
+LQCD sites per node: 34992
+route written to file
+Simulation is complete, simulated time: 7.97544 ms
+
+EMBER: platform: LQCD
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=LQCD_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/LQCD_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 1
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=1 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['LQCD', 'nx=144', 'ny=144', 'nz=144', 'nt=192', 'peflops=75000000000000']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+LQCD compute time resid: 36 mmvs4d: 134 ns
+LQCD nsquares size: x16y8z8t16
+LQCD square size: x9y18z18t12
+LQCD problem size: x144y144z144t192
+LQCD gather num_elements (1st and Naik): 26873856 80621568
+LQCD compute time resid: 36 mmvs4d: 134 ns
+LQCD iterations: 1
+LQCD sites per node: 34992
+route written to file
+Simulation is complete, simulated time: 8.18787 ms
+
+EMBER: platform: LQCD
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=LQCD_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/LQCD_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 2
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=2 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['LQCD', 'nx=144', 'ny=144', 'nz=144', 'nt=192', 'peflops=75000000000000']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+LQCD compute time resid: 36 mmvs4d: 134 ns
+LQCD nsquares size: x16y8z8t16
+LQCD square size: x9y18z18t12
+LQCD problem size: x144y144z144t192
+LQCD gather num_elements (1st and Naik): 26873856 80621568
+LQCD compute time resid: 36 mmvs4d: 134 ns
+LQCD iterations: 1
+LQCD sites per node: 34992
+route written to file
+Simulation is complete, simulated time: 8.30269 ms
+
+EMBER: platform: LQCD
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=LQCD_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/LQCD_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 3
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=3 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['LQCD', 'nx=144', 'ny=144', 'nz=144', 'nt=192', 'peflops=75000000000000']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+LQCD compute time resid: 36 mmvs4d: 134 ns
+LQCD nsquares size: x16y8z8t16
+LQCD square size: x9y18z18t12
+LQCD problem size: x144y144z144t192
+LQCD gather num_elements (1st and Naik): 26873856 80621568
+LQCD compute time resid: 36 mmvs4d: 134 ns
+LQCD iterations: 1
+LQCD sites per node: 34992
+route written to file
+Simulation is complete, simulated time: 8.77952 ms

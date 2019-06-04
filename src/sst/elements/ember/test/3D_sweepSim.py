@@ -7,7 +7,7 @@ def getWorkFlow( defaults ):
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
-    motif['cmd'] = "Sweep3D pex=256 pey=256 nx=256 ny=256 nz=256 nodeflops=75000000000000 fields_per_cell=6 kba=8"
+    motif['cmd'] = "Sweep3D pex=128 pey=256 nx=32 ny=32 nz=32 nodeflops=75000000000000 fields_per_cell=6 kba=8"
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
@@ -25,7 +25,7 @@ def getNetwork():
 	platform = '3D_sweep'
 
 	topo = 'dragonfly'
-	shape = '16:32:16:32'
+	shape = '16:32:16:16'
 
 	return platform, topo, shape
 

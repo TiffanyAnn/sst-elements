@@ -1,0 +1,55 @@
+EMBER: platform: allPingPong
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=allPingPong_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/allPingPong_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 0
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=0 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['AllPingPong', 'iterations=100', 'messageSize=1024']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+AllPingPong: total time 631.280 us, loop 100, bufLen 1024, latency 3.156 us. bandwidth 0.324420 GB/s
+route written to file
+Simulation is complete, simulated time: 682.036 us
+
+EMBER: platform: allPingPong
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=allPingPong_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/allPingPong_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 1
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=1 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['AllPingPong', 'iterations=100', 'messageSize=1024']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+AllPingPong: total time 498.202 us, loop 100, bufLen 1024, latency 2.491 us. bandwidth 0.411078 GB/s
+route written to file
+Simulation is complete, simulated time: 681.619 us
+
+EMBER: platform: allPingPong
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=allPingPong_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/allPingPong_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 2
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=2 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['AllPingPong', 'iterations=100', 'messageSize=1024']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+AllPingPong: total time 767.716 us, loop 100, bufLen 1024, latency 3.839 us. bandwidth 0.266765 GB/s
+route written to file
+Simulation is complete, simulated time: 825.92 us
+
+EMBER: platform: allPingPong
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=allPingPong_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/allPingPong_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 3
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=3 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['AllPingPong', 'iterations=100', 'messageSize=1024']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+AllPingPong: total time 714.445 us, loop 100, bufLen 1024, latency 3.572 us. bandwidth 0.286656 GB/s
+route written to file
+Simulation is complete, simulated time: 826.366 us

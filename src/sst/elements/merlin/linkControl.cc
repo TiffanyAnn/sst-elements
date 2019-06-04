@@ -43,16 +43,22 @@ namespace Merlin {
 // checks ports in each route against the list of disabled ports (downPorts)
 // if a route contains a disabled port, it will be marked as down
 void readRoutes(){
-   std::cout << "rt_filename: " << rt_filename << "\n";
+   //std::cout << "rt_filename: " << rt_filename << "\n";
     unsigned int routeKey;
     unsigned int portInRoute;
     std::string routeID;
     std::string line;
     bool found;
-	 std::ifstream routeFile(RT_FILENAME);
+    std::ifstream routeFile(RT_FILENAME);
 
+    if(routeFile.is_open()){
     while(std::getline(routeFile, line))
     {
+
+	if(downPorts.size() == 0) {
+		std::cout << "WARNING: no down ports found\n";
+		exit(0);
+	}
         found = false;
 		std::istringstream temp(line);
         std::getline(temp, routeID, ':');
@@ -68,18 +74,30 @@ void readRoutes(){
        }
     }
     fileRead = true;
-    std::cout << "downRoutes: " << downRoutes.size() << "\n";
+    std::cout << "Number of routes/ports down: " << downRoutes.size() << "/" << downPorts.size() << "\n";
+    }
+        else{
+                std::cout << "Error opening route file\n";
+                exit(0);
+        }
 }
 
 // read the ports that are marked as disabled from a text file
 // insert into an unordered_set referenced by the downRoutes function
 void readDownPorts(){
-	std::ifstream  fin(DOWNPORT_FNAME);
-   uint64_t port;
-	while (fin >> port){
-      downPorts.insert(port);
-   }
-   std::cout << downPorts.size() << "\n";
+	std::ifstream fin(DOWNPORT_FNAME);
+	if(fin.is_open()){
+   		std::string line;
+		unsigned int port;
+		while (fin >> line){
+	 		port = std::stoul(line);
+      			downPorts.insert((uint64_t)port);
+   		}
+	}
+	else{
+		std::cout << "Error opening file\n";
+		exit(0);
+	}
 }
 
 LinkControl::LinkControl(Component* parent, Params &params) :

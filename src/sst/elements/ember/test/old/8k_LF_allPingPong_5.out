@@ -1,0 +1,46 @@
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+EMBER: platform: allPingPong
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=allPingPong_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/allPingPong_DF_8k_rt.txt
+override merlinParams merlinParams.runtype=0 with 1
+override merlinParams merlinParams.route=0 with 5
+override merlinParams merlinParams.downPort_filename=5percent_down.txt with /global/homes/t/tconnors/sst/sst-elements/src/sst/elements/ember/test/portFiles/1percent_8k_5.txt
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=5 RUNTYPE=1 ROUTING_ALGO=adaptive-local PORTS_FNAME=/global/homes/t/tconnors/sst/sst-elements/src/sst/elements/ember/test/portFiles/1percent_8k_5.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['AllPingPong', 'iterations=100', 'messageSize=256']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Fini']
+Number of routes/ports down: 8034/158
+AllPingPong: total time 578.480 us, loop 100, bufLen 256, latency 2.892 us. bandwidth 0.088508 GB/s
+Simulation is complete, simulated time: 700.867 us
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158
+Number of routes/ports down: 8034/158

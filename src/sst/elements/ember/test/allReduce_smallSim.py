@@ -30,7 +30,7 @@ def getNetwork():
 	#topo = ''
 	#shape = ''
 	topo = 'dragonfly'
-	shape = '16:32:16:32'
+	shape = '16:32:16:16'
 
 	return platform, topo, shape
 

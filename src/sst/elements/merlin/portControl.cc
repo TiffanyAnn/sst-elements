@@ -59,6 +59,10 @@ void writePortPairs(){
         for(auto itr = portPairs.begin(i);itr !=portPairs.end(i); ++itr){
         	unsigned int local = itr->first;
          unsigned int remote = itr->second;
+                                //unsigned int localLogical = local & 0xff;
+				//unsigned int remoteLogical = remote & 0xff;
+				//std::cout << topo->getPortLogicalGroup(localLogical) << " " << topo->getPortLogicalGroup(remoteLogical)<< "\n";	
+                               // remote = (remote_group << 16) | (remote_rtr << 8) | (remote_port_number);
          fprintf(portFile, "%d %d\n", local, remote);
     }
  }
@@ -473,14 +477,22 @@ PortControl::finish() {
 	 	}
 	}
 
+	 if (RUNTYPE == 7){
+         //print route info to file
+            if(hasPrinted == false){
+               writePortPairs();
+               hasPrinted = true;
+                }
+        }
+
 	 if (RUNTYPE == 1){
 	 	if(hasPrinted == false){
-	 		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkEncountered << "\n";
+	 	/*	std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkEncountered << "\n";
 	 		std::cout << "number of packets routed minimally: " << directRoute << "\n";
 	 		std::cout << "number of packets adaptively routed: " << valiantRoute << "\n";
 	 	   std::cout << "minimal blocked packets (routed to val): " << minBlocked << "\n";
 	 	   std::cout << "adatptive blocked packets (routed to min): " << valBlocked << "\n";
-	 		std::cout << "total packets: " << totalPackets << "\n";
+	 		std::cout << "total packets: " << totalPackets << "\n"; */
 	 		hasPrinted = true;
 	 	}
 	}
@@ -586,11 +598,17 @@ PortControl::init(unsigned int phase) {
 				local = (local_group << 16) | (local_rtr << 8) | (port_number);
 				remote = (remote_group << 16) | (remote_rtr << 8) | (remote_port_number);
 
+				//std::cout << (topo->getPortLogicalGroup(port_number)) << "\n";
+				
+			if((topo->getPortLogicalGroup(port_number)) == "host"){
 				if((localPorts.find(remote) == localPorts.end()) && remotePorts.find(local) == remotePorts.end()){
 					localPorts.insert(local);
 					remotePorts.insert(remote);
 					portPairs.insert(std::make_pair(local,remote));
+
+					std::cout << (topo->getPortLogicalGroup(port_number)) << "\n";
 				}
+			 }
         //}
 	     }
         }
@@ -904,7 +922,8 @@ PortControl::handle_input_r2r(Event* ev)
 	    int curr_vc = event->getVC();
 	    topo->route(port_number, event->getVC(), event);
 
-		 		  if((event->getdlLinkEncountered() == -1) && (event->getdlReroute() != -1)) {std::cout << "unset DL\n"; printf("routing: %d, dlReroute: %d\n", event->getRouting(), event->getdlReroute());}
+		if((event->getdlLinkEncountered() == -1) && (event->getdlReroute() != -1)) 
+			{std::cout << "unset DL\n"; printf("routing: %d, dlReroute: %d\n", event->getRouting(), event->getdlReroute());}
 		 if(event->getRouting() == 1) { directRoute++; minPkts->addData(1); }
 		 if(event->getRouting() == 2) { valiantRoute++; valPkts->addData(1); }
 		 if(event->getdlReroute() == 1) { valBlocked++; valBlockedPkts->addData(1); }

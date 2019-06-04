@@ -33,9 +33,10 @@
 				   set to any other number to disable */
 
 /*#define RUNTYPE 0 -- 0 - generates routing table
-					 1 - loads the routing table from file and
-				         does adaptive routing for failed links
-				   2 - normal run */
+		       1 - loads the routing table from file and
+			   does adaptive routing for failed links
+		       2 - normal run 
+		       7 - generate port pairs (should incorporate this into 0 somehow) */
 
 using namespace SST::Merlin;
 
@@ -385,7 +386,7 @@ if (RUNTYPE == 1){
         int valiant_route_credits = output_credits[valiant_route_port * num_vcs + vc];
 
         int drc = 0; int vrc = 0; //variables for checking if rerouting due to failed link
-if(RUNTYPE == 0){
+if(RUNTYPE == 0 || RUNTYPE == 3){
 	if ((ROUTE==0)||(ROUTE==1))
 		valiant_route_credits = -1;
 		if ((ROUTE==2)||(ROUTE==3))
@@ -449,7 +450,7 @@ if(RUNTYPE == 0){
 		int temp_vrc2 = 0;
 		int temp_vrc = 0;
 
-if (RUNTYPE == 0){
+if (RUNTYPE == 0 || RUNTYPE == 3){
 	if(ROUTE == 0) direct_route_credits1 = -1;
 	if(ROUTE == 1) direct_route_credits2 = -1;
 }
@@ -495,7 +496,7 @@ if (RUNTYPE == 1){
 				temp_vrc1 = valiant_route_credits1;
 				temp_vrc2 = valiant_route_credits2;
 
-if (RUNTYPE == 0){
+if (RUNTYPE == 0 || RUNTYPE == 3){
 	if(ROUTE == 2) { valiant_route_credits1 = -1; direct_route_credits=-1; }
 	if(ROUTE == 3) { valiant_route_credits2 = -1; direct_route_credits=-1; }
 }

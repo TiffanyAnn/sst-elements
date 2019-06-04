@@ -1,0 +1,61 @@
+EMBER: platform: FFT3D
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.route=0 with 0
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=0 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['FFT3D', 'nx=2048', 'ny=2048', 'nz=2048', 'npRow=8', 'nsPerElement=0.0016']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+FFT3D: nsPerElement=0.00160 1.00 1.00 1.00 1.00 1.00 1.00
+FFT3D: nRanks=16384 fwd time 0.017013 sec
+FFT3D: rRanks=16384 bwd time 0.016999 sec
+route written to file
+Simulation is complete, simulated time: 34.2104 ms
+
+EMBER: platform: FFT3D
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.route=0 with 1
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=1 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['FFT3D', 'nx=2048', 'ny=2048', 'nz=2048', 'npRow=8', 'nsPerElement=0.0016']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+FFT3D: nsPerElement=0.00160 1.00 1.00 1.00 1.00 1.00 1.00
+FFT3D: nRanks=16384 fwd time 0.016676 sec
+FFT3D: rRanks=16384 bwd time 0.016599 sec
+route written to file
+Simulation is complete, simulated time: 33.4725 ms
+srun: Job 16791526 step creation temporarily disabled, retrying
+srun: Step created for job 16791526
+
+EMBER: platform: FFT3D
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.route=0 with 2
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=2 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['FFT3D', 'nx=2048', 'ny=2048', 'nz=2048', 'npRow=8', 'nsPerElement=0.0016']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+FFT3D: nsPerElement=0.00160 1.00 1.00 1.00 1.00 1.00 1.00
+FFT3D: nRanks=16384 fwd time 0.017133 sec
+FFT3D: rRanks=16384 bwd time 0.017415 sec
+route written to file
+Simulation is complete, simulated time: 34.7787 ms
+
+EMBER: platform: FFT3D
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.route=0 with 3
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=3 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['FFT3D', 'nx=2048', 'ny=2048', 'nz=2048', 'npRow=8', 'nsPerElement=0.0016']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+FFT3D: nsPerElement=0.00160 1.00 1.00 1.00 1.00 1.00 1.00
+FFT3D: nRanks=16384 fwd time 0.017427 sec
+FFT3D: rRanks=16384 bwd time 0.017392 sec
+route written to file
+Simulation is complete, simulated time: 35.0569 ms

@@ -7,7 +7,8 @@ def getWorkFlow( defaults ):
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
-    motif['cmd'] = "Halo3D26 nx=4000 ny=4000 nz=4000 peflops=75000000000000 fields_per_cell=30"
+    # exascale motif['cmd'] = "Halo3D26 nx=128 ny=128 nz=128 peflops=75000000000000 fields_per_cell=30"
+    motif['cmd'] = "Halo3D26 iterations=1 nx=16 ny=16 nz=16 peflops=75000000000000 fields_per_cell=10"
     workFlow.append( motif )
 
     motif = dict.copy( defaults )
@@ -30,7 +31,8 @@ def getNetwork():
 	#topo = ''
 	#shape = ''
 	topo = 'dragonfly'
-	shape = '16:32:16:32'
+	shape = '16:32:16:2'
+	# exascale shape = '16:32:16:32'
 
 	return platform, topo, shape
 

@@ -468,7 +468,7 @@ sst.setStatisticLoadLevel(1)
 
 sst.setStatisticOutput("sst.statOutputCSV");
 sst.setStatisticOutputOptions({
-    "filepath" : "stats.csv",
+    "filepath" : "/global/cscratch1/sd/tconnors/stats/stats.csv",
     "separator" : ", "
 })
 sst.enableAllStatisticsForComponentType("merlin.hr_router", {"type":"sst.AccumulatorStatistic","rate":"0ns"})

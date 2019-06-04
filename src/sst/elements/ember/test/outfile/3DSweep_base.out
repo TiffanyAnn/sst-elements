@@ -1,0 +1,51 @@
+EMBER: platform: 3D_sweep
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=3d_sweep_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/3d_sweep_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 0
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=0 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Sweep3D', 'pex=128', 'pey=128', 'nx=256', 'ny=256', 'nz=256', 'nodeflops=75000000000000', 'fields_per_cell=6', 'kba=8']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+route written to file
+Simulation is complete, simulated time: 64.03 ms
+
+EMBER: platform: 3D_sweep
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=3d_sweep_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/3d_sweep_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 1
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=1 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Sweep3D', 'pex=128', 'pey=128', 'nx=256', 'ny=256', 'nz=256', 'nodeflops=75000000000000', 'fields_per_cell=6', 'kba=8']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+route written to file
+Simulation is complete, simulated time: 63.9396 ms
+
+EMBER: platform: 3D_sweep
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=3d_sweep_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/3d_sweep_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 2
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=2 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Sweep3D', 'pex=128', 'pey=128', 'nx=256', 'ny=256', 'nz=256', 'nodeflops=75000000000000', 'fields_per_cell=6', 'kba=8']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+route written to file
+Simulation is complete, simulated time: 65.9887 ms
+
+EMBER: platform: 3D_sweep
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=3d_sweep_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/3d_sweep_DF_16384_rt.txt
+override merlinParams merlinParams.route=0 with 3
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=3 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Sweep3D', 'pex=128', 'pey=128', 'nx=256', 'ny=256', 'nz=256', 'nodeflops=75000000000000', 'fields_per_cell=6', 'kba=8']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+route written to file
+Simulation is complete, simulated time: 66.6864 ms

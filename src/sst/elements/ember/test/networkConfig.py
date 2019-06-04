@@ -116,7 +116,7 @@ class DragonFlyLegacyInfo(TopoInfo):
 		self.params["dragonfly:intergroup_per_router"] = glbl
 		self.params["dragonfly:num_groups"] =  nGrp
 		sst.params["dragonfly:algorithm"] = "adaptive-local"
-		sst.params["dragonfly:adaptive_threshold"] = "2.0"
+		sst.params["dragonfly:adaptive_threshold"] = "100"
 
 		self.numNodes = nGrp * hostsPerGroup
 
@@ -136,7 +136,7 @@ class DragonFlyInfo(TopoInfo):
 		self.params["dragonfly:routers_per_group"] = nRtrs
 		self.params["dragonfly:intergroup_links"] = glbl
 		self.params["dragonfly:num_groups"] =  nGrp
-		#self.params["dragonfly:algorithm"] =  "minimal"
+	#	self.params["dragonfly:algorithm"] =  "minimal"
 		#self.params["route"] = "0"
 		#self.params["runtype"] = "0"
 		#self.params["rt_filename"] = "Test.txt"

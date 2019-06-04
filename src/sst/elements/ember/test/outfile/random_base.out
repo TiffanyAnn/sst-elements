@@ -1,0 +1,47 @@
+EMBER: platform: random
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.route=0 with 0
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=0 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Random', 'messagesize=1024', 'iterations=100']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+route written to file
+Simulation is complete, simulated time: 560.924 us
+
+EMBER: platform: random
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.route=0 with 1
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=1 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Random', 'messagesize=1024', 'iterations=100']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+route written to file
+Simulation is complete, simulated time: 561.08 us
+
+EMBER: platform: random
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.route=0 with 2
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=2 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Random', 'messagesize=1024', 'iterations=100']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+route written to file
+Simulation is complete, simulated time: 631.965 us
+
+EMBER: platform: random
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.route=0 with 3
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=3 RUNTYPE=0 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Random', 'messagesize=1024', 'iterations=100']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=1 ['Fini']
+route written to file
+Simulation is complete, simulated time: 639.648 us
