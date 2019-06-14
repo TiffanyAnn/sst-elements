@@ -22,4 +22,8 @@ src/sst/elements/merlin/*DF*.txt
 src/sst/elements/merlin/*.out
 src/sst/elements/ember/test/*DF*.txt
 src/sst/elements/ember/test/*.out
-
+src/sst/elements/ember/test/old/
+src/sst/elements/ember/test/stats/
+src/sst/elements/ember/test/outfile/
+*.tar.gz
+ipdps_sbatch/
