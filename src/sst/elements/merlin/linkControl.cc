@@ -24,9 +24,13 @@
 #include <sstream>
 #include "merlin.h"
 
-#define RUNTYPE 1 //0: create routing table
-				  //1: read routing table from file
-#define FILENAME "TEST_16DF_rt.txt" //filename for the routing table
+
+std::string RT_FILENAME; //routing table filename
+std::string DOWNPORT_FNAME; //file containing list of down ports
+static std::string rt_filename;
+static std::string downPort_filename;
+
+std::unordered_set<uint64_t>downPorts;
 static bool hasPrinted = false; //to print the routing table only once
 static bool fileRead = false;
 
@@ -35,54 +39,65 @@ using namespace Interfaces;
 
 namespace Merlin {
 
+// reads the routing table from a text file
+// checks ports in each route against the list of disabled ports (downPorts)
+// if a route contains a disabled port, it will be marked as down
 void readRoutes(){
+   //std::cout << "rt_filename: " << rt_filename << "\n";
     unsigned int routeKey;
     unsigned int portInRoute;
     std::string routeID;
     std::string line;
     bool found;
-	std::ifstream routeFile(FILENAME);
+    std::ifstream routeFile(RT_FILENAME);
 
+    if(routeFile.is_open()){
     while(std::getline(routeFile, line))
     {
+
+	if(downPorts.size() == 0) {
+		std::cout << "WARNING: no down ports found\n";
+		exit(0);
+	}
         found = false;
 		std::istringstream temp(line);
         std::getline(temp, routeID, ':');
         routeKey = std::stoul (routeID);
         while(std::getline(temp, line, ',') && found == false){
            portInRoute = std::stoul(line);
-           auto search = DL.find(portInRoute); //check port against down links
-           if(search != DL.end()) //port is down
+           auto search = downPorts.find((uint64_t)portInRoute); //check port against down links
+           if(search != downPorts.end()) //port is down
            {
-           		downRoutes.insert(routeKey);
+           		downRoutes.insert((uint64_t)routeKey);
              	found = true;
            }
        }
     }
-
     fileRead = true;
-std::cout << "route read from file\n";
-
+    std::cout << "Number of routes/ports down: " << downRoutes.size() << "/" << downPorts.size() << "\n";
+    }
+        else{
+                std::cout << "Error opening route file\n";
+                exit(0);
+        }
 }
 
-void writeRoutes(){
-	FILE * routeFile;
-    routeFile = fopen (FILENAME,"a");
-    for (unsigned i=0; i< umap.bucket_count(); ++i) {
-    	bool printed = false;
-        for(auto itr = umap.begin(i);itr !=umap.end(i); ++itr){
-        	unsigned int src_dest = itr->first;
-            unsigned int theLink = itr->second;
-            if(printed == false){
-            	fprintf(routeFile, "\n%d:%d", src_dest, theLink);
-                printed = true;
-            }
-            else
-            	fprintf(routeFile, ",%d", theLink);
-        }
-    }
-    fclose (routeFile);
-std::cout << "route written to file\n";
+// read the ports that are marked as disabled from a text file
+// insert into an unordered_set referenced by the downRoutes function
+void readDownPorts(){
+	std::ifstream fin(DOWNPORT_FNAME);
+	if(fin.is_open()){
+   		std::string line;
+		unsigned int port;
+		while (fin >> line){
+	 		port = std::stoul(line);
+      			downPorts.insert((uint64_t)port);
+   		}
+	}
+	else{
+		std::cout << "Error opening file\n";
+		exit(0);
+	}
 }
 
 LinkControl::LinkControl(Component* parent, Params &params) :
@@ -109,6 +124,11 @@ LinkControl::LinkControl(Component* parent, Params &params) :
     else {
         merlin_abort.fatal(CALL_INFO,-1,"Unknown checkerboard_alg requested: %s\n",checkerboard_alg.c_str());
     }
+    //RT_FILENAME = params.find<std::string>("rt_filename");
+    rt_filename = RT_FILENAME;
+    //DOWNPORT_FNAME = params.find<std::string>("downPort_filename");
+    downPort_filename = DOWNPORT_FNAME;
+    //std::cout << "RT " << RT_FILENAME.c_str() << "\n";
 }
 
 bool
@@ -167,10 +187,12 @@ LinkControl::initialize(const std::string& port_name, const UnitAlgebra& link_bw
     idle_time = registerStatistic<uint64_t>("idle_time");
 
 	// Read in routing information and check for downLinks
-#if RUNTYPE == 1
-	if(fileRead == false)
+if (RUNTYPE == 1){
+	if(fileRead == false){
+      readDownPorts();
 		readRoutes();
-#endif
+   }
+}
     return true;
 }
 
@@ -347,25 +369,6 @@ void LinkControl::finish(void)
             output_buf[i].pop();
         }
     }
-
-#if RUNTYPE == 0
-	//print route info to file
-	if(hasPrinted == false){
-		writeRoutes();
-		hasPrinted = true;
-	}
-#endif
-#if RUNTYPE == 1
-	if(hasPrinted == false){
-		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
-		std::cout << "number of packets routed minimally: " << dirPacketCount << "\n";
-		std::cout << "number of packets adaptively routed: " << valPacketCount << "\n";
-		std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
-		std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
-		std::cout << "total packets: " << allPackets << "\n";
-		hasPrinted = true;
-	}
-#endif
 }
 
 

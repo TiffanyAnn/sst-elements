@@ -26,19 +26,69 @@
 #define TRACK_ID 131
 #define TRACK_PORT 4
 
-#define RUNTYPE 0 //0: create routing table
+//#define RUNTYPE 0 //0: create routing table
 				  //1: read routing table from file
-#define FILENAME "TEST_16384_rt.txt" //filename for the routing table
+
 bool hasPrinted = false; //to print the routing table only once
 bool fileRead = false;
 
 int directRoute = 0;
 int valiantRoute = 0;
 int totalPackets = 0;
+int downLinkEncountered = 0;
+int valBlocked = 0;
+int minBlocked = 0;
+
+static std::unordered_multimap<unsigned int,unsigned int>portPairs;
+static std::unordered_set<unsigned int>localPorts;
+static std::unordered_set<unsigned int>remotePorts;
+
+static std::string filename; //routing table filename
+static int RTRS_PER_GRP;
 
 using namespace SST;
 using namespace Merlin;
 using namespace Interfaces;
+
+void writePortPairs(){
+	std::cout << ROUTE << "\n";
+	FILE * portFile;
+	std::string fname = "ports.txt";
+   portFile = fopen (fname.c_str(),"a");
+   for (unsigned i=0; i< portPairs.bucket_count(); ++i) {
+        for(auto itr = portPairs.begin(i);itr !=portPairs.end(i); ++itr){
+        	unsigned int local = itr->first;
+         unsigned int remote = itr->second;
+                                //unsigned int localLogical = local & 0xff;
+				//unsigned int remoteLogical = remote & 0xff;
+				//std::cout << topo->getPortLogicalGroup(localLogical) << " " << topo->getPortLogicalGroup(remoteLogical)<< "\n";	
+                               // remote = (remote_group << 16) | (remote_rtr << 8) | (remote_port_number);
+         fprintf(portFile, "%d %d\n", local, remote);
+    }
+ }
+    fclose (portFile);
+std::cout << "port pairs written to file\n";
+}
+
+void writeRoutes(){
+	FILE * routeFile;
+    routeFile = fopen (filename.c_str(),"a");
+    for (unsigned i=0; i< umap.bucket_count(); ++i) {
+    	bool printed = false;
+        for(auto itr = umap.begin(i);itr !=umap.end(i); ++itr){
+        	uint64_t src_dest = itr->first;
+            uint64_t theLink = itr->second;
+            if(printed == false){
+            	fprintf(routeFile, "\n%llu:%llu", src_dest, theLink);
+                printed = true;
+            }
+            else
+            	fprintf(routeFile, ",%llu", theLink);
+        }
+    }
+    fclose (routeFile);
+std::cout << "route written to file\n";
+}
 
 void
 PortControl::sendTopologyEvent(TopologyEvent* ev)
@@ -140,7 +190,7 @@ PortControl::recv(int vc)
     return event;
 }
 // time_base is a frequency which represents the bandwidth of the link in flits/second.
-PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
+PortControl::PortControl(Params &p, Router* rif, int rtr_id, std::string link_port_name,
                          int port_number, const UnitAlgebra& link_bw, const UnitAlgebra& flit_size,
                          Topology *topo,
                          SimTime_t input_latency_cycles, std::string input_latency_timebase,
@@ -203,8 +253,7 @@ PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
         break;
     }
 
-	//std::cout << rtr_id << "/" << port_number << " " << link_bw << "\n";
-//  	std::cout << "rtr_id: " << rtr_id << " port: " << port_number << " " << topo->getPortLogicalGroup(port_number) << "\n";
+
 	// This is the self link to enable the logic for adaptive link widths.
 	// The initial call to the handler dynlink_timing->send is made in setup.
 	dynlink_timing = rif->configureSelfLink(link_port_name + "_dynlink_timing", "10us",
@@ -244,6 +293,13 @@ PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
     idle_time = rif->registerStatistic<uint64_t>("idle_time", port_name);
     width_adj_count = rif->registerStatistic<uint64_t>("width_adj_count", port_name);
 
+	 minBlockedPkts = rif->registerStatistic<uint64_t>("minBlockedPkts", port_name);
+	 valBlockedPkts = rif->registerStatistic<uint64_t>("valBlockedPkts", port_name);
+	 minPkts = rif->registerStatistic<uint64_t>("minPkts", port_name);
+	 valPkts = rif->registerStatistic<uint64_t>("valPkts", port_name);
+	 totalPkts = rif->registerStatistic<uint64_t>("totalPkts", port_name);
+	 downLinksEncountered = rif->registerStatistic<uint64_t>("downLinksEncountered", port_name);
+
 	// set the SAI metrics to 0
 	stalled = 0;
 	active = 0;
@@ -268,6 +324,10 @@ PortControl::PortControl(Router* rif, int rtr_id, std::string link_port_name,
         ni->initialize(port_name);
         network_inspectors.push_back(ni);
     }
+	 RTRS_PER_GRP = p.find<int>("dragonfly:routers_per_group");
+	 //RT_FILENAME = p.find<std::string>("rt_filename", "");
+	 filename = RT_FILENAME;
+
 }
 
 
@@ -383,7 +443,6 @@ PortControl::setup() {
 
 void
 PortControl::finish() {
-
     // Any links that ended in an idle state need to add stats
     if (is_idle && connected) {
         idle_time->addData(Simulation::getSimulation()->getCurrentSimCycle() - idle_start);
@@ -409,17 +468,34 @@ PortControl::finish() {
         network_inspectors[i]->finish();
     }
 
-	 #if RUNTYPE == 1
+	 if (RUNTYPE == 0){
+	 	//print route info to file
 	 	if(hasPrinted == false){
-	 		std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkCount << "\n";
-	 		std::cout << "number of packets routed minimally: " << directRoute << "\n";
-	 		std::cout << "number of packets adaptively routed: " << valiantRoute << "\n";
-	 	//	std::cout << "minimal blocked packets (routed to val): " << minBlockedCount << "\n";
-	 	//	std::cout << "adatptive blocked packets (routed to min): " << valBlockedCount << "\n";
-	 		std::cout << "total packets: " << totalPackets << "\n";
+	 		writeRoutes();
+			//writePortPairs();
 	 		hasPrinted = true;
 	 	}
-	 #endif
+	}
+
+	 if (RUNTYPE == 7){
+         //print route info to file
+            if(hasPrinted == false){
+               writePortPairs();
+               hasPrinted = true;
+                }
+        }
+
+	 if (RUNTYPE == 1){
+	 	if(hasPrinted == false){
+	 	/*	std::cout << "\nnumber of times rerouting due to a failed link: " << downLinkEncountered << "\n";
+	 		std::cout << "number of packets routed minimally: " << directRoute << "\n";
+	 		std::cout << "number of packets adaptively routed: " << valiantRoute << "\n";
+	 	   std::cout << "minimal blocked packets (routed to val): " << minBlocked << "\n";
+	 	   std::cout << "adatptive blocked packets (routed to min): " << valBlocked << "\n";
+	 		std::cout << "total packets: " << totalPackets << "\n"; */
+	 		hasPrinted = true;
+	 	}
+	}
 }
 
 
@@ -505,7 +581,36 @@ PortControl::init(unsigned int phase) {
             init_ev = dynamic_cast<RtrInitEvent*>(ev);
             remote_port_number = init_ev->int_value;
             delete init_ev;
-        }
+
+				// save local and remote port pairs
+				uint64_t local, remote;
+				uint64_t local_group, local_rtr, remote_group, remote_rtr;
+
+				//if ((topo->getPortLogicalGroup(port_number) != "host") && (topo->getPortLogicalGroup(remote_port_number) != "host")){
+				// map from numbering scheme used in portControl
+				// to numbering scheme used in the topology files
+				local_group = uint64_t(rtr_id/RTRS_PER_GRP);
+				local_rtr = uint64_t(rtr_id%RTRS_PER_GRP);
+				remote_group = uint64_t(remote_rtr_id/RTRS_PER_GRP);
+				remote_rtr = uint64_t(remote_rtr_id%RTRS_PER_GRP);
+
+				// pack the 3 variables into a single variable before adding to umap
+				local = (local_group << 16) | (local_rtr << 8) | (port_number);
+				remote = (remote_group << 16) | (remote_rtr << 8) | (remote_port_number);
+
+				//std::cout << (topo->getPortLogicalGroup(port_number)) << "\n";
+				
+			if((topo->getPortLogicalGroup(port_number)) == "host"){
+				if((localPorts.find(remote) == localPorts.end()) && remotePorts.find(local) == remotePorts.end()){
+					localPorts.insert(local);
+					remotePorts.insert(remote);
+					portPairs.insert(std::make_pair(local,remote));
+
+					std::cout << (topo->getPortLogicalGroup(port_number)) << "\n";
+				}
+			 }
+        //}
+	     }
         }
         break;
     // case 2:
@@ -683,7 +788,6 @@ PortControl::dumpQueueState(port_queue_t& q, Output& out) {
 void
 PortControl::handle_input_n2r(Event* ev)
 {
-
 	// Check to see if this is a credit or data packet
 	// credit_event* ce = dynamic_cast<credit_event*>(ev);
 	// if ( ce != NULL ) {
@@ -731,9 +835,18 @@ PortControl::handle_input_n2r(Event* ev)
         internal_router_event* rtr_event = topo->process_input(event);
         rtr_event->setCreditReturnVC(vn);
         int curr_vc = rtr_event->getVC();
-	    topo->route(port_number, rtr_event->getVC(), rtr_event);
-		 if(rtr_event->getRouting() == 0) { directRoute++; }
-		 if(rtr_event->getRouting() == 1) { valiantRoute++; }
+
+		  topo->route(port_number, rtr_event->getVC(), rtr_event);
+
+		  /*if((rtr_event->getdlLinkEncountered() == -1) && (rtr_event->getdlReroute() != -1)) {std::cout << "unset DL\n"; printf("routing: %d, dlReroute: %d\n", rtr_event->getRouting(), rtr_event->getdlReroute());}
+
+		  if(rtr_event->getRouting() == 1) { minPkts->addData(1); }
+		  if(rtr_event->getRouting() == 2) { valPkts->addData(1); }
+		  if(rtr_event->getdlReroute() == 1) { valBlockedPkts->addData(1); }
+		  if(rtr_event->getdlReroute() == 2) { minBlockedPkts->addData(1); }
+		  if(rtr_event->getdlLinkEncountered() == 1) { downLinksEncountered->addData(1); }
+		  totalPkts->addData(1);*/
+
 	    input_buf[curr_vc].push(rtr_event);
 	    input_buf_count[curr_vc]++;
 
@@ -743,18 +856,6 @@ PortControl::handle_input_n2r(Event* ev)
             parent->inc_vcs_with_data();
 	    }
 
-	    /*if(event->getTrack() == true) {//if ( event->request->getTraceType() != SST::Interfaces::SimpleNetwork::Request::NONE ) {
-            output.output("TRACE(%d): %" PRIu64 " ns: Received an event on port %d in router %d"
-                          " (%s) on VC %d from src %" PRIu64 " to dest %" PRIu64 ".\n",
-                          event->getTraceID(),
-                          parent->getCurrentSimTimeNano(),
-                          port_number,
-                          rtr_id,
-                          parent->getName().c_str(),
-                          curr_vc,
-                          event->request->src,
-                          event->request->dest);
-	    }*/
 
 	    if ( parent->getRequestNotifyOnEvent() ) parent->notifyEvent();
 	}
@@ -820,10 +921,17 @@ PortControl::handle_input_r2r(Event* ev)
 	    // Need to do the routing
 	    int curr_vc = event->getVC();
 	    topo->route(port_number, event->getVC(), event);
-		 if(event->getTrack() == true) { std::cout << "hello from portControl r2r\n";}
-		 if(event->getRouting() == 0) { directRoute++; }
-		 if(event->getRouting() == 1) { valiantRoute++; }
+
+		if((event->getdlLinkEncountered() == -1) && (event->getdlReroute() != -1)) 
+			{std::cout << "unset DL\n"; printf("routing: %d, dlReroute: %d\n", event->getRouting(), event->getdlReroute());}
+		 if(event->getRouting() == 1) { directRoute++; minPkts->addData(1); }
+		 if(event->getRouting() == 2) { valiantRoute++; valPkts->addData(1); }
+		 if(event->getdlReroute() == 1) { valBlocked++; valBlockedPkts->addData(1); }
+		 if(event->getdlReroute() == 2) { minBlocked++; minBlockedPkts->addData(1); }
+		 if(event->getdlLinkEncountered() == 1) { downLinkEncountered++; downLinksEncountered->addData(1); }
+		 totalPkts->addData(1);
 		 totalPackets++;
+
 	    input_buf[curr_vc].push(event);
 	    input_buf_count[curr_vc]++;
 
@@ -834,19 +942,6 @@ PortControl::handle_input_r2r(Event* ev)
             parent->inc_vcs_with_data();
 	    }
 
-/*if(event->getTrack() == true){//	    if ( event->getTraceType() != SimpleNetwork::Request::NONE ) {
-            output.output("TRACE(%d): %" PRIu64 " ns: Received an event on port %d in router %d"
-                          " (%s) on VC %d from src %d to dest %d.\n",
-                          event->getTraceID(),
-                          parent->getCurrentSimTimeNano(),
-                          port_number,
-                          rtr_id,
-                          parent->getName().c_str(),
-                          curr_vc,
-                          event->getSrc(),
-                          event->getDest());
-
-	    }*/
 
 	    if ( parent->getRequestNotifyOnEvent() ) parent->notifyEvent();
 	}
@@ -962,17 +1057,6 @@ PortControl::handle_output_r2r(Event* ev) {
             is_idle = false;
         }
 
-	  /* if(send_event->getTrack() == true){// if ( send_event->getTraceType() == SimpleNetwork::Request::FULL ) {
-            output.output("TRACE(00): %" PRIu64 " ns: Sent and event to router from PortControl in router: %d"
-                          " (%s) on VC %d from src %d to dest %d.\n",
-                          parent->getCurrentSimTimeNano(),
-                          rtr_id,
-                          parent->getName().c_str(),
-                          send_event->getVC(),
-                          send_event->getSrc(),
-                          send_event->getDest());
-
-	    }*/
         send_bit_count->addData(send_event->getEncapsulatedEvent()->request->size_in_bits);
         send_packet_count->addData(1);
 
@@ -1117,18 +1201,6 @@ PortControl::handle_output_n2r(Event* ev) {
             is_idle = false;
         }
 
-	    /*if(send_event->getTrack() == true) {//if ( send_event->getTraceType() == SimpleNetwork::Request::FULL ) {
-            output.output("TRACE(%d01): %" PRIu64 " ns: Sent an event to router from PortControl in router: %d"
-                          " (%s) on VC %d from src %d to dest %d.\n",
-                          send_event->getTraceID(),
-                          parent->getCurrentSimTimeNano(),
-                          rtr_id,
-                          parent->getName().c_str(),
-                          send_event->getVC(),
-                          send_event->getSrc(),
-                          send_event->getDest());
-
-	    }*/
         send_bit_count->addData(send_event->getEncapsulatedEvent()->request->size_in_bits);
         send_packet_count->addData(1);
 	    if ( host_port ) {

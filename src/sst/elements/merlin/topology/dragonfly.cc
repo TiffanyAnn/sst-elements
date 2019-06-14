@@ -19,22 +19,24 @@
 #include "sst/core/rng/xorshift.h"
 
 #include "dragonfly.h"
+#include "sst/elements/merlin/merlin.h"
 
 #include <stdlib.h>
 #include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 
-#define ROUTE 0 /* 0 is 1st direct route,
+/*#define ROUTE 0 -- 0 is 1st direct route,
 				   1 is 2nd direct route,
 				   2 is 1st valiant route,
 				   3 is 2nd valiant route,
 				   set to any other number to disable */
 
-#define RUNTYPE 0 /* 0 - generates routing table
-					 1 - loads the routing table from file and
-				         does adaptive routing for failed links
-				   2 - normal run */
+/*#define RUNTYPE 0 -- 0 - generates routing table
+		       1 - loads the routing table from file and
+			   does adaptive routing for failed links
+		       2 - normal run 
+		       7 - generate port pairs (should incorporate this into 0 somehow) */
 
 using namespace SST::Merlin;
 
@@ -46,6 +48,8 @@ int dirPacketCount;
 int valPacketCount;
 int allPackets;
 
+int ROUTE, RUNTYPE;
+
 //local place holder variables
 /*int downLinkEncountered = 0;
 int minBlocked =0;
@@ -54,27 +58,27 @@ int minPackets = 0;
 int valPackets = 0;
 int packets = 0;*/
 
-// need to put info into single variable: grp | rtr | port
-unsigned int downLink0 = (1111 << 16) | (1110 << 8) | 17;
-unsigned int downLink1 = (1111 << 16) | (1119 << 8) | 6;
-unsigned int downLink2 = (1111 << 16) | (1110 << 8) | 3;
-unsigned int downLink3 = (1112 << 16) | (1110 << 8) | 4;
+/*// need to put info into single variable: grp | rtr | port
+uint64_t downLink0 = (111100 << 16) | (1110 << 8) | 117;
+uint64_t downLink1 = (111100 << 16) | (1119 << 8) | 116;
+uint64_t downLink2 = (111100 << 16) | (1110 << 8) | 113;
+uint64_t downLink3 = (111200 << 16) | (1110 << 8) | 114;
 
 //insert the failed links into the set
-std::unordered_set<unsigned int>DL= { downLink0, downLink1,
-								 	  downLink2, downLink3 };
+std::unordered_set<uint64_t>downPorts= { downLink0, downLink1,
+								 	  downLink2, downLink3 };*/
 
-std::unordered_multimap<unsigned int,unsigned int>umap;
-std::unordered_set<unsigned int>downRoutes; //routes that are down
+std::unordered_multimap<uint64_t,uint64_t>umap; //storing routes
+std::unordered_set<uint64_t>downRoutes; //routes that are down
 
 // Check routing decisions against the downRoute set
 bool
-isRouteDown(unsigned int route){
-	std::unordered_set<unsigned int>::const_iterator i = downRoutes.find (route);
-	if( i == downRoutes.end()) //route exists in the set
-		return false;
-	else {
+isRouteDown(uint64_t route){
+	std::unordered_set<uint64_t>::const_iterator i = downRoutes.find (route);
+	if( i != downRoutes.end()) //route exists in the set
 		return true;
+	else {
+		return false;
 	}
 }
 
@@ -125,9 +129,10 @@ topo_dragonfly::topo_dragonfly(Component* comp, Params &p) :
         output.fatal(CALL_INFO, -1, "Invalid dragonfly:global_route_mode specified: %s.\n",global_route_mode_s.c_str());
     }
 
-    std::string route_algo = "adaptive-local";//p.find<std::string>("dragonfly:algorithm", "minimal");
-
-    adaptive_threshold = 2.0; //p.find<double>("dragonfly:adaptive_threshold",2.0);
+//    std::string route_algo = "adaptive-local";//p.find<std::string>("dragonfly:algorithm", "minimal");
+ 	std::string route_algo = p.find<std::string>("dragonfly:algorithm", "minimal");
+    adaptive_threshold =
+	 p.find<double>("dragonfly:adaptive_threshold",2.0);
 
     // Get the global link map
     std::vector<int64_t> global_link_map;
@@ -296,21 +301,21 @@ topo_dragonfly::route(int port, int vc, internal_router_event* ev)
         if(ev->getTrack() == true){
         	printf("ev->dest: %u dest_grp: %u dest_rtr: %u next_port: %u\n",
                     ev->getDest(), td_ev->dest.group, td_ev->dest.router, next_port);
-    		unsigned int src_to_dest0 = (0 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		unsigned int src_to_dest1 = (1 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		unsigned int src_to_dest2 = (2 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		unsigned int src_to_dest3 = (3 << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		printf("r0: %d r1: %d r2: %d r3: %d\n",  src_to_dest0,  src_to_dest1, src_to_dest2, src_to_dest3);
     	}
 
         output.verbose(CALL_INFO, 1, 1, "%u:%u, Recv: %d/%d  Setting Next Port/VC:  %u/%u\n", group_id, router_id, port, vc, next_port, td_ev->getVC());
         td_ev->setNextPort(next_port);
 
-    #if RUNTYPE == 0
-    		unsigned int src_to_dest = (ROUTE << 16) | (ev->getSrc() << 8) | ev->getDest();
-    		unsigned int link = (group_id << 16) | (router_id << 8) | port;
-    		umap.insert(std::make_pair(src_to_dest,link));
-    #endif
+    if (RUNTYPE == 0){
+		 uint64_t src_to_dest, mySrc, myDest, link;
+		 mySrc=(uint64_t)ev->getSrc();
+		 myDest=(uint64_t)ev->getDest();
+
+		 src_to_dest = (mySrc << 16) | (myDest << 8) | (uint64_t)ROUTE;
+		 link = (((uint64_t)group_id << 16) | ((uint64_t)router_id << 8) | port);
+
+    	 umap.insert(std::make_pair(src_to_dest,link));
+    }
 
     output.verbose(CALL_INFO, 1, 1, "%u:%u, Recv: %d/%d  Setting Next Port/VC:  %u/%u\n", group_id, router_id, port, vc, next_port, td_ev->getVC());
     td_ev->setNextPort(next_port);
@@ -318,49 +323,51 @@ topo_dragonfly::route(int port, int vc, internal_router_event* ev)
 
 void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
 {
+
     if ( algorithm != ADAPTIVE_LOCAL ) return;
-	 int downLinkEncountered = 0;
-	 int minBlocked =0;
+	 //int downLinkEncountered = 0;
+	/* int minBlocked =0;
 	 int valBlocked = 0;
 	 int minPackets = 0;
 	 int valPackets = 0;
-	 int packets = 0;
+	 int packets = 0;*/
 
     topo_dragonfly_event *td_ev = static_cast<topo_dragonfly_event*>(ev);
-	 packets++;
-	 allPackets += packets;
-#if RUNTYPE == 1
-    	bool r0 = false; bool r1 = false;
-    	bool r2 = false; bool r3 = false;
-    	if(isRouteDown((0 << 16) | (ev->getSrc() << 8) | ev->getDest()) == true)
+
+	 td_ev->setRouting(-1);
+	 td_ev->setdlReroute(-1);
+	 td_ev->setdlLinkEncountered(-1);
+
+	 bool r0 = false; bool r1 = false;
+	 bool r2 = false; bool r3 = false;
+
+	 //check for down routes
+if (RUNTYPE == 1){
+		uint64_t myDest, mySrc;
+		myDest = (uint64_t)ev->getDest();
+		mySrc = (uint64_t)ev->getSrc();
+    	if(isRouteDown((mySrc << 16) | (myDest << 8) | 0) == true)
         r0 = true;
-    	if(isRouteDown((1 << 16) | (ev->getSrc() << 8) | ev->getDest()) == true)
+    	if(isRouteDown((mySrc << 16) | (myDest << 8) | 1) == true)
         r1 = true;
-      if(isRouteDown((2 << 16) | (ev->getSrc() << 8) | ev->getDest()) == true)
+      if(isRouteDown((mySrc << 16) | (myDest << 8) | 2) == true)
         r2 = true;
-      if(isRouteDown((3 << 16) | (ev->getSrc() << 8) | ev->getDest()) == true)
+      if(isRouteDown((mySrc << 16) | (myDest << 8) | 3) == true)
         r3 = true;
 
     	// if all routes are marked as unavailable then routing will fail
     	if((r0 == true) && (r1 == true) && (r2==true) && (r3==true)){
+			std::cout << "r0: " << ((mySrc << 16) | (myDest << 8) | 0) << " r1: " << ((mySrc << 16) | (myDest << 8) | 1) << " r2: " << ((mySrc << 16) | (myDest << 8) | 2) << " r3: " << ((mySrc << 16) | (myDest << 8) | 3) << "\n";
     		printf("ERROR_1: No available routes from %d -> %d\n", ev->getSrc(), ev->getDest());
-          exit( EXIT_FAILURE);
+         exit( EXIT_FAILURE);
     	}
-#endif
-
-    if(ev->getTrack() == true){
-      std::cout << "========== reroute() ==========\n";
-      printf("src_grp: %u curr_grp: %u curr_rtr: %u curr_port: %u\n",
-              td_ev->src_group, group_id, router_id, port);
-    }
+  }
 
     // For now, we make the adaptive routing decision only at the
     // input to the network and at the input to a group for adaptively
     // routed packets
     if ( port >= params.p && port < (params.p + params.a-1) ){
-      minPackets++; //this is considered a direct routing
-      dirPacketCount += minPackets;
-		td_ev->setRouting(0); //set as direct route taken
+		td_ev->setRouting(1); //set as direct route taken
       return;
 		}
 
@@ -368,9 +375,7 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
     if ( port < params.p && td_ev->dest.group == group_id ) {
         // If we're at the correct router, no adaptive needed
         if ( td_ev->dest.router == router_id) {
-          minPackets++;
-          dirPacketCount += minPackets;
-			 td_ev->setRouting(0); //set as direct route taken
+			 td_ev->setRouting(1); //set as direct route taken
           return;
         }
 
@@ -381,42 +386,41 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
         int valiant_route_credits = output_credits[valiant_route_port * num_vcs + vc];
 
         int drc = 0; int vrc = 0; //variables for checking if rerouting due to failed link
-
-#if RUNTYPE == 1
+if(RUNTYPE == 0 || RUNTYPE == 3){
+	if ((ROUTE==0)||(ROUTE==1))
+		valiant_route_credits = -1;
+		if ((ROUTE==2)||(ROUTE==3))
+			direct_route_credits = -1;
+}
+ if(RUNTYPE == 1){
   // direct routes are down
   if(r0 == true || r1 == true) { direct_route_credits = -1; drc = -1; }
   // valiant routes are down
   if(r2 == true || r3 == true) { valiant_route_credits = -1; vrc = -1; }
-#endif
-
+ }
 // (ROUTE!=0) || (ROUTE!=1) --> need for RUNTYPE==0. Won't take adaptive if a direct route has been specified
-      if (((ROUTE!=0)||(ROUTE!=1)) || (valiant_route_credits > (int)((double)direct_route_credits * adaptive_threshold)) ) {
+      if (((ROUTE==2)||(ROUTE==3)) || (valiant_route_credits > (int)((double)direct_route_credits * adaptive_threshold)) ) {
         td_ev->setNextPort(valiant_route_port);
-        valPackets++;
-		  td_ev->setRouting(1); //set as valiant route taken
+		  td_ev->setRouting(2); //set as valiant route taken
         if(drc == -1) {
-			  downLinkEncountered++; minBlocked++; } //rerouted from direct route due to failed link
+			  td_ev->setdlLinkEncountered(1);
+			  td_ev->setdlReroute(2); //rerouted from direct route due to failed link
+		  }
       }
       else {
         td_ev->setNextPort(direct_route_port);
-        minPackets++;
-		  td_ev->setRouting(0); //set as direct route taken
-        if(vrc == -1) { downLinkEncountered++; valBlocked++; } //rerouted from valiant route due to link fail
+		  td_ev->setRouting(1); //set as direct route taken
+        if(vrc == -1) {
+			  td_ev->setdlLinkEncountered(1);
+			  td_ev->setdlReroute(1); //rerouted from valiant route due to link fail
+		  }
       }
-      //copy the tally variables to the global counts
-      downLinkCount += downLinkEncountered;
-      minBlockedCount += minBlocked;
-      valBlockedCount += valBlocked;
-      dirPacketCount += minPackets;
-      valPacketCount += valPackets;
       return;
     }
 
     // If the dest is in the same group, no need to adaptively route
     if ( td_ev->dest.group == group_id ){
-      minPackets++;
-      dirPacketCount += minPackets;
-		td_ev->setRouting(0); //set as direct route taken
+		 td_ev->setRouting(1); //set as direct route taken
       return;
     }
 
@@ -442,18 +446,19 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
 		int temp_drc1 = direct_route_credits1;
 		int temp_drc2 = direct_route_credits2;
 		int temp_drc = 0;
-		int temp_vrc1, temp_vrc2;
+		int temp_vrc1 = 0;
+		int temp_vrc2 = 0;
 		int temp_vrc = 0;
 
-#if RUNTYPE == 0
+if (RUNTYPE == 0 || RUNTYPE == 3){
 	if(ROUTE == 0) direct_route_credits1 = -1;
 	if(ROUTE == 1) direct_route_credits2 = -1;
-#endif
+}
 
-#if RUNTYPE == 1
+if (RUNTYPE == 1){
 	if(r0 == true) direct_route_credits1 = -1;
 	if(r1 == true) direct_route_credits2 = -1;
-#endif
+}
 
 		if ( direct_route_credits1 > direct_route_credits2 ) {
         direct_slice = direct_slice1;
@@ -475,7 +480,9 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
     if ( port >= (params.p + params.a-1) ) {
         // Global port, no indirect routes.  Set credits negative so
         // it will never get chosen
-				temp_vrc = -1;
+		  temp_vrc = -1;
+		  temp_vrc1 = -1;
+		  temp_vrc2 = -1;
         valiant_route_credits = -1;
     }
     else {
@@ -489,15 +496,15 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
 				temp_vrc1 = valiant_route_credits1;
 				temp_vrc2 = valiant_route_credits2;
 
-#if RUNTYPE == 0
+if (RUNTYPE == 0 || RUNTYPE == 3){
 	if(ROUTE == 2) { valiant_route_credits1 = -1; direct_route_credits=-1; }
 	if(ROUTE == 3) { valiant_route_credits2 = -1; direct_route_credits=-1; }
-#endif
+}
 
-#if RUNTYPE == 1
+if (RUNTYPE == 1){
 	if(r2 == true) valiant_route_credits1 = -1;
 	if(r3 == true) valiant_route_credits2 = -1;
-#endif
+}
 
       	if ( valiant_route_credits1 > valiant_route_credits2 ) {
 					valiant_slice = valiant_slice1;
@@ -519,42 +526,23 @@ void topo_dragonfly::reroute(int port, int vc, internal_router_event* ev)
         td_ev->dest.mid_group = td_ev->dest.mid_group_shadow;
         td_ev->setNextPort(valiant_route_port);
         td_ev->global_slice = valiant_slice;
-				valPackets++;
-			td_ev->setRouting(1); //set as valiant route taken
-			#if RUNTYPE == 1
-				if((r0==true && r1==true) &&(temp_vrc < (int)((double)temp_drc*adaptive_threshold))){
-					downLinkEncountered++; minBlocked++;
+
+		      td_ev->setRouting(2); //set as valiant route taken
+				if((r0==true && r1==true) && ( temp_vrc < (int)((double)temp_drc*adaptive_threshold))){
+					td_ev->setdlLinkEncountered(1);
+					td_ev->setdlReroute(2); //rerouted from direct route due to failed link
 				}
-			#endif
-			if(ev->getTrack() == true){
-				std::cout << "taking valiant route\n";
-				printf("grp: %u rtr: %u next_port: %u\n",
-				group_id, router_id, valiant_route_port);
-				std::cout << "endpointID: " << getEndpointID(valiant_route_port) << "\n";
-			}
     }
     else { // Use direct route
         td_ev->dest.mid_group = td_ev->dest.group;
         td_ev->setNextPort(direct_route_port);
         td_ev->global_slice = direct_slice;
-		  td_ev->setRouting(0); //set as direct route taken
-				minPackets++;
-				#if RUNTYPE == 1
-					if((r3 == true || r2 == true) && temp_vrc > (int)((double)temp_drc*adaptive_threshold)){
-						downLinkEncountered++; valBlocked++; }
-				#endif
-				if(ev->getTrack() == true){
-					std::cout << "taking direct route\n";
-					printf("src: %u grp: %u rtr: %u next_port: %u\n",
-					td_ev->src_group,group_id, router_id, direct_route_port);
-				}
-    }
-		downLinkCount += downLinkEncountered;
-		minBlockedCount += minBlocked;
-	  valBlockedCount += valBlocked;
-		dirPacketCount += minPackets;
-		valPacketCount += valPackets;
 
+				   td_ev->setRouting(1); //set as direct route taken
+					if((r3 == true || r2 == true) && ( temp_vrc > (int)((double)temp_drc*adaptive_threshold))){
+						td_ev->setdlLinkEncountered(1);
+						td_ev->setdlReroute(1);} //rerouted from valiant route due to failed link
+    }
 }
 
 

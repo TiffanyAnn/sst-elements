@@ -1,0 +1,39 @@
+EMBER: platform: allReduce_small
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=allReduceSmall_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/allReduce_small_DF_8k_rt.txt
+override merlinParams merlinParams.runtype=0 with 2
+override merlinParams merlinParams.route=0 with 5
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=5 RUNTYPE=2 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Allreduce', 'iterations=1', 'count=1024']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Fini']
+Allreduce: ranks 65536, loop 1, 1024 double(s), latency 109.048 us
+Simulation is complete, simulated time: 265.48 us
+EMBER: platform: allReduce_small
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=allReduceSmall_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/allReduce_small_DF_8k_rt.txt
+override merlinParams merlinParams.runtype=0 with 2
+override merlinParams merlinParams.route=0 with 5
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=5 RUNTYPE=2 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Allreduce', 'iterations=1', 'count=1024']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Fini']
+Allreduce: ranks 65536, loop 1, 1024 double(s), latency 109.048 us
+Simulation is complete, simulated time: 265.48 us
+EMBER: platform: allReduce_small
+EMBER: network: topology=dragonfly shape=16:32:16:32
+EMBER: numNodes=16384 numNics=16384
+override merlinParams merlinParams.rt_filename=allReduceSmall_DF_16384_rt.txt with /global/cscratch1/sd/tconnors/allReduce_small_DF_8k_rt.txt
+override merlinParams merlinParams.runtype=0 with 2
+override merlinParams merlinParams.route=0 with 5
+EMBER: network: BW=100GB/s pktSize=2048B flitSize=40B
+EMBER: merlin: ROUTE=5 RUNTYPE=2 ROUTING_ALGO=adaptive-local PORTS_FNAME=5percent_down.txt
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Init']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Allreduce', 'iterations=1', 'count=1024']
+EMBER: Job: -nidList=0-16383 -ranksPerNode=4 ['Fini']
+Allreduce: ranks 65536, loop 1, 1024 double(s), latency 109.048 us
+Simulation is complete, simulated time: 265.48 us

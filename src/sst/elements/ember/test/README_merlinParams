@@ -1,0 +1,27 @@
+The following Merline parameters are set within the <sim>Params.py file under merlinParams
+
+ROUTE----------------
+merlinParams.route -- 0 is 1st direct route,
+         	      1 is 2nd direct route,
+	              2 is 1st valiant route,
+	              3 is 2nd valiant route,
+	              set to any other number to disable
+
+RUNTYPE----------------
+merlinParams.runtype -- 0 - generates routing table
+	                1 - loads the routing table from file and does adaptive routing for failed links
+	                2 - normal run
+
+RT_FNAME-------------------
+merlinParams.rt_filename -- filename of the routing table
+
+PORT_FNAME----------------------
+merlinParams.downPort_filename -- filename of the list of disabled ports
+
+
+To change the values, they can either be changed in the <sim>Params.py file or by command line as follows:
+
+sst ./emberLoad.py --model-options='--simConfig <simFile> --param merlin:merlinParams.route=<int>  --param merlin:merlinParams.runtype=<int>  --param merlin:merlinParams.rt_filename=<string> --param merlin:merlinParams.downPort_filename=<string>'
+
+
+

@@ -33,10 +33,29 @@ extern int valBlockedCount;
 extern int dirPacketCount;
 extern int valPacketCount;
 extern int allPackets;
+extern int valiantRoute;
+extern int directRoute;
+extern int totalPackets;
+extern int downLinkEncountered;
+extern int valBlocked;
+extern int minBlocked;
 
-extern std::unordered_multimap<unsigned int,unsigned int>umap; //the routing table
-extern std::unordered_set<unsigned int>downRoutes; //routes unavailable due to link failures
-extern std::unordered_set<unsigned int>DL;
+extern int RUNTYPE; //0: create routing table
+				        //1: read routing table from file
+                    //2: normal run
+
+extern int ROUTE;  /* 0 is 1st direct route,
+				          1 is 2nd direct route,
+				          2 is 1st valiant route,
+				          3 is 2nd valiant route,
+				          set to any other number to disable */
+extern std::string RT_FILENAME;
+extern std::string DOWNPORT_FNAME;
+
+extern std::unordered_multimap<uint64_t,uint64_t>umap; //the routing table
+extern std::unordered_set<uint64_t>downRoutes; //routes unavailable due to link failures
+extern std::unordered_set<uint64_t>downPorts; //ports marked as disabled
+
 using namespace SST;
 
 namespace SST {
@@ -45,7 +64,7 @@ namespace Merlin {
     // Library wide Output object.  Mostly used for fatal() calls
     static Output merlin_abort("Merlin: ", 5, -1, Output::STDERR);
     static Output merlin_abort_full("Merlin: @f, line @l: ", 5, -1, Output::STDOUT);
-    
+
 }
 }
 

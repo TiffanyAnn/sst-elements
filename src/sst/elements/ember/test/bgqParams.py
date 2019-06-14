@@ -15,9 +15,9 @@ networkParams = {
     "link_lat" : "40ns",
     "input_latency" : "10ns",
     "output_latency" : "10ns",
-    "flitSize" : "8B",
-    "input_buf_size" : "14KB",
-    "output_buf_size" : "14KB",
+    "flitSize" : "40B",
+    "input_buf_size" : "100KB",
+    "output_buf_size" : "100KB",
 }
 
 nicParams = {

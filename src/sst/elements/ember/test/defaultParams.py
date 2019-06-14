@@ -6,13 +6,13 @@ netConfig = {
 
 networkParams = {
     "packetSize" : "2048B",
-    "link_bw" : "4GB/s",
-    "link_lat" : "40ns",
-    "input_latency" : "50ns",
-    "output_latency" : "50ns",
-    "flitSize" : "8B",
-    "input_buf_size" : "14KB",
-    "output_buf_size" : "14KB",
+    "link_bw" : "100GB/s",
+    "link_lat" : "150ns",
+    "input_latency" : "150ns",
+    "output_latency" : "150ns",
+    "flitSize" : "40B",
+    "input_buf_size" : "100KB",
+    "output_buf_size" : "100KB",
 }
 
 nicParams = {
@@ -26,7 +26,7 @@ nicParams = {
     "txDelay_ns" : 50,
     "nic2host_lat" : "150ns",
     "useSimpleMemoryModel" : 0,
-# simpleMemoryModel.verboseMask: values 
+# simpleMemoryModel.verboseMask: values
 #define BUS_WIDGET_MASK 1<<1
 #define CACHE_MASK      1<<2
 #define LOAD_MASK       1<<3
@@ -38,23 +38,23 @@ nicParams = {
 	"simpleMemoryModel.verboseLevel" : 0,
 	"simpleMemoryModel.verboseMask" : -1,
 
-	"simpleMemoryModel.hostCacheUnitSize" : 612, 
-	"simpleMemoryModel.hostCacheNumMSHR" : 16, 
-	"simpleMemoryModel.hostCacheLineSize" : 64, 
+	"simpleMemoryModel.hostCacheUnitSize" : 612,
+	"simpleMemoryModel.hostCacheNumMSHR" : 16,
+	"simpleMemoryModel.hostCacheLineSize" : 64,
 
-	"simpleMemoryModel.memNumSlots" : 128, 
+	"simpleMemoryModel.memNumSlots" : 128,
 
-	"simpleMemoryModel.nicCacheUnitSize" : 2, 
+	"simpleMemoryModel.nicCacheUnitSize" : 2,
 
-	"simpleMemoryModel.memReadLat_ns" : 150, 
-	"simpleMemoryModel.memWriteLat_ns" : 40, 
-	"simpleMemoryModel.widgetSlots" : 32, 
+	"simpleMemoryModel.memReadLat_ns" : 150,
+	"simpleMemoryModel.memWriteLat_ns" : 40,
+	"simpleMemoryModel.widgetSlots" : 32,
 
-	"simpleMemoryModel.nicNumLoadSlots" : 16, 
-	"simpleMemoryModel.nicNumStoreSlots" : 16, 
+	"simpleMemoryModel.nicNumLoadSlots" : 16,
+	"simpleMemoryModel.nicNumStoreSlots" : 16,
 
-	"simpleMemoryModel.nicHostLoadSlots" : 1, 
-	"simpleMemoryModel.nicHostStoreSlots" : 1, 
+	"simpleMemoryModel.nicHostLoadSlots" : 1,
+	"simpleMemoryModel.nicHostStoreSlots" : 1,
 
     "simpleMemoryModel.busBandwidth_GB" : 7.8,
 }
@@ -70,6 +70,13 @@ emberParams = {
     'firefly.hadesSHMEM.enterLat_ns'  : 7,
     'firefly.hadesSHMEM.returnLat_ns' : 7,
     "verbose" : 0,
+}
+
+merlinParams = {
+    "merlinParams.route" : 5,
+    "merlinParams.runtype" : 2,
+    "merlinParams.rt_filename" : "3d_sweep_DF_16384_rt.txt",
+    "merlinParams.downPort_filename" : "5percent_down.txt",
 }
 
 hermesParams = {
